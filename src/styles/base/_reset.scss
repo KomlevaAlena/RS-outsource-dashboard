@@ -1,0 +1,24 @@
+// _reset.scss
+@use '../variables' as *;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: $font-family;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.6;
+  transition: background 0.3s ease;
+}
+
+.main {
+  flex: 1;
+  padding-top: $spacing-lg;
+}
