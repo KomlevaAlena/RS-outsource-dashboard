@@ -1,5 +1,9 @@
 // Шрифты
-$font-family: 'Arial', 'Helvetica', sans-serif;
+$font-main: "Inter-Regular", Arial, sans-serif;
+$font-medium: "Inter-Medium", Arial, sans-serif;
+$font-bold: "Inter-Bold", Arial, sans-serif;
+$font-secondary: "Roboto-Regular", Helvetica, sans-serif;
+$font-family: $font-main;
 
 // Размеры шрифтов
 $font-size-base: 16px;

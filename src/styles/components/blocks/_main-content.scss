@@ -1,0 +1,24 @@
+@use '../../variables';
+
+.dashboard-layout {
+  display: flex; // Ставим сайдбар и контент в один ряд
+  height: 100vh;
+  width: 100vw;
+}
+
+// Основная область
+.main-content {
+  flex: 1; // Занимает всё оставшееся пространство
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-page);
+  padding: variables.$spacing-md;
+  overflow-y: auto; // Если контента много, появится прокрутка
+}
+
+.main-header {
+  display: flex;
+  justify-content: space-between; // Заголовок слева, кнопка справа
+  align-items: center;
+  margin-bottom: variables.$margin-bottom-filters;
+}

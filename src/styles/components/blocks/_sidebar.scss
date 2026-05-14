@@ -1,0 +1,25 @@
+@use '../../variables';
+
+.sidebar {
+  width: 260px;
+  background-color: var(--bg-primary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease; // Плавное сворачивание в будущем
+  padding: variables.$spacing-sm;
+  width: 260px;
+  transition: width 0.3s ease; // Убедись, что это есть для плавности
+
+  // Когда у сайдбара появляется этот класс, он сужается
+  &--collapsed {
+    width: 60px; // Оставляем место только для иконки
+    
+    // Скрываем текст заголовка и навигации, чтобы не торчали
+    .sidebar__title, 
+    .nav-list__item span, // если добавим текст в span
+    .period-selector {
+      display: none;
+    }
+  }
+}

@@ -8,6 +8,7 @@ console.log('✅ SCSS styles imported');
 // Импортируем нашу память (Store) и начальные данные (Seed)
 import { store } from './scripts/app/store.js';
 import { initialData } from './scripts/app/seed-data.js';
+import { initUI } from './scripts/app/ui.js';
 // ПРОВЕРКА: Если в памяти совсем пусто, запишем туда наши начальные данные
 const currentData = store.getRawData();
 if (Object.keys(currentData).length === 0) {
@@ -37,14 +38,13 @@ console.log('📅 Данные за май 2026:', store.getMonthData('2026-4'))
 // todoController.init();
 // console.log('🚀 Todo Controller started');
 
-// // Проверка что контроллер загрузился
-// setTimeout(() => {
-//   console.log('=== ОТЛАДКА ЧЕРЕЗ 2 СЕКУНДЫ ===');
-//   console.log('todoController:', todoController);
-//   console.log('Есть ли метод init?', todoController?.init);
-
-//   if (todoController && todoController.init) {
-//     console.log('Пробую запустить вручную...');
-//     todoController.init();
-//   }
-// }, 2000);
+// Проверка что контроллер загрузился
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Даем загрузчику компонентов мгновение, чтобы вставить HTML
+  setTimeout(function() {
+    console.log('Инициализирую обработчики событий интерфейса...');
+    initUI();
+  }, 0);
+  
+});
