@@ -1,5 +1,5 @@
 // Главный файл - импортируем все стили и скрипты
-console.log('🎯 Starting Todo App...');
+console.log('🎯 Starting App...');
 
 // Импортируем стили
 import './styles/main.scss';

@@ -23,3 +23,26 @@
     }
   }
 }
+
+// Стили для кнопок навигации в сайдбаре
+.nav-button {
+  width: 100%;
+  padding: 10px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s;
+
+  // Стиль для активной кнопки (выбранной вкладки)
+  &--active {
+    background-color: var(--accent-color);
+    color: white; // Текст становится белым на синем фоне
+  }
+
+  &:hover:not(.nav-button--active) {
+    background-color: var(--bg-secondary);
+  }
+}
