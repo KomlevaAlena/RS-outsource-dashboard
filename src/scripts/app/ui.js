@@ -3,6 +3,8 @@
  * Файл для управления интерфейсом (кнопки, переключения вкладок, меню)
  */
 
+import { renderCurrentTab } from './render.js';
+
 function handleTabSwich(event) {
     const navButtons = document.querySelectorAll('.nav-button');// 1. Находим все кнопки навигации
     const pageTitle = document.getElementById('page-title'); //2. Находим заголовок страницы и главную кнопку действия
@@ -26,6 +28,7 @@ function handleTabSwich(event) {
     }
 
     console.log('Переключено на вкладку:', selectedTab);
+    renderCurrentTab(selectedTab, '2026-4');
 }
 
 export function initUI() {

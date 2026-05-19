@@ -1,0 +1,58 @@
+@use '../variables' as *;
+
+.btn, button {
+    font-family: $font-medium;
+    font-weight: 500;
+    font-size: $font-size-base;
+    color: var(--text-primary);
+    background-color: transparent;
+    border-radius: $border-radius-md;
+    border: 1px solid var(--text-primary);
+    padding: 15px;
+    
+    &:hover,
+    &:focus,
+    &:focus-visible {
+        color: var(--accent-hover);
+        background-color: transparent;
+        border: 1px solid var(--accent-hover);
+        outline: none;
+    }
+
+    &:active {
+        color: var(--text-primary);
+        background-color: var(--accent-hover);
+        border: 1px solid var(--text-primary);
+        outline: none;
+    }
+}
+
+// .link {
+//     color: $dark;
+//     text-decoration: none;
+//     text-transform: uppercase;
+//     font-family: $font-family;
+//     font-size: 22px;
+//     font-weight: 100;
+//     line-height: 22px;
+//     letter-spacing: 0.09em;
+//     text-align: left;
+
+//     &:hover,
+//     &:focus,
+//     &:focus-visible {
+//         color: $primary;
+//         border: none;
+//         outline: none;
+//     }
+
+//     &:active {
+//         color: $primary-10;
+//         border: none;
+//         outline: none;
+//     }
+// }
+
+.list, ul {
+    list-style: none;
+}
