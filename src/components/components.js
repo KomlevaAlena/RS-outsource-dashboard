@@ -15,6 +15,13 @@ export const components = {
               <option value="2">Март</option>
               <option value="3">Апрель</option>
               <option value="4">Май</option>
+              <option value="5">Июнь</option>
+              <option value="6">Июль</option>
+              <option value="7">Август</option>
+              <option value="8">Сентябрь</option>
+              <option value="9">Октябрь</option>
+              <option value="10">Ноябрь</option>
+              <option value="11">Декабрь</option>
               </select>
             <select id="year-select" class="select">
               <option value="2025">2025</option>
@@ -24,18 +31,18 @@ export const components = {
         </div>
         <ul class="nav-list">
           <li class="nav-list__item">
-            <button class="nav-button nav-button--active" data-tab="projects">Проекты</button>
+            <button class="nav-button nav-button--active" data-tab="projects">Projects</button>
           </li>
           <li class="nav-list__item">
-            <button class="nav-button" data-tab="employees">Сотрудники</button>
+            <button class="nav-button" data-tab="employees">Employees</button>
           </li>
         </ul>
       </nav>
     </aside>
     <main class="main-content">
       <header class="main-header">
-        <h1 id="page-title">Проекты</h1>
-        <button class="btn btn--primary" id="add-entity-btn">+ Добавить проект</button>
+        <h1 id="page-title">Projects</h1>
+        <button class="btn btn--primary" id="add-entity-btn">+ Add project</button>
       </header>
 
       <div id="table-container" class="table-container">

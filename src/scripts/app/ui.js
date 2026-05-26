@@ -5,6 +5,13 @@
 
 import { renderCurrentTab } from './render.js';
 
+function getCurrentPeriod() { // собирает "год-месяц" из селекторов
+    const monthSelect = document.getElementById('month-select');
+    const yearSelect = document.getElementById('year-select');
+
+    return yearSelect.value + '-' + monthSelect.value; // .value берет значение из <option value="...">
+}
+
 function handleTabSwich(event) {
     const navButtons = document.querySelectorAll('.nav-button');// 1. Находим все кнопки навигации
     const pageTitle = document.getElementById('page-title'); //2. Находим заголовок страницы и главную кнопку действия
@@ -28,13 +35,28 @@ function handleTabSwich(event) {
     }
 
     console.log('Переключено на вкладку:', selectedTab);
-    renderCurrentTab(selectedTab, '2026-4');
+
+    const period = getCurrentPeriod();
+    renderCurrentTab(selectedTab, period); // ТЕПЕРЬ МЫ БЕРЕМ ПЕРИОД ДИНАМИЧЕСКИ!
+}
+
+function handelPeriodChange() {
+    const activeTabBtn = document.querySelector('.nav-button--active');
+    const selectedTab = activeTabBtn.getAttribute('data-tab');
+
+    const period = getCurrentPeriod();
+    renderCurrentTab(selectedTab, period);
+    console.log('Период изменен на:', period);
 }
 
 export function initUI() {
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('sidebar-toggle');
     const navButtons = document.querySelectorAll('.nav-button'); // Находим все кнопки вкладок
+
+    const monthSelect = document.getElementById('month-select');// Находим селекторы
+    const yearSelect = document.getElementById('year-select');
+
     // Проверяем наличие элементов на странице
     if (sidebar && toggleBtn) { // Логика сворачивания сайдбара
         toggleBtn.addEventListener('click', function() {
@@ -44,8 +66,17 @@ export function initUI() {
     }
 
     // Логика переключения вкладок
-  navButtons.forEach(function(button) {
-    // Вешаем событие клика на каждую кнопку
-    button.addEventListener('click', handleTabSwich);
-  });
+    navButtons.forEach(function(button) {
+        // Вешаем событие клика на каждую кнопку
+        button.addEventListener('click', handleTabSwich);
+    });
+
+    if (monthSelect && yearSelect) { // Добавляем слушатель события 'change' (изменение выбора)
+        monthSelect.addEventListener('change', handelPeriodChange);
+        yearSelect.addEventListener('change', handelPeriodChange);
+    }
+
+    renderCurrentTab('projects', getCurrentPeriod());
 }
+
+
