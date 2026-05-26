@@ -82,6 +82,39 @@ export const components = {
             </form>
         </div>
     </div>
+    <div class="slide-panel" id="employee-panel">
+        <div class="slide-panel__overlay" id="employee-panel-overlay"></div>
+        <div class="slide-panel__content">
+            <div class="slide-panel__header">
+                <h2>New Employee</h2>
+                <button class="slide-panel__close" id="employee-panel-close">×</button>
+            </div>
+
+            <form class="form" id="employee-form" novalidate>
+                <div class="form__group">
+                    <label class="form__label">Full Name</label>
+                    <input type="text" id="emp-name" class="form__input" required>
+                    <span class="form__error" id="error-emp-name"></span>
+                </div>
+                <div class="form__group">
+                    <label class="form__label">Position</label>
+                    <input type="text" id="emp-position" class="form__input" required>
+                    <span class="form__error" id="error-emp-position"></span>
+                </div>
+                <div class="form__group">
+                    <label class="form__label">Age</label>
+                    <input type="number" id="emp-age" class="form__input" required>
+                    <span class="form__error" id="error-emp-age"></span>
+                </div>
+                <div class="form__group">
+                    <label class="form__label">Salary ($ / month)</label>
+                    <input type="number" id="emp-salary" class="form__input" required>
+                    <span class="form__error" id="error-emp-salary"></span>
+                </div>
+                <button type="submit" class="btn btn--primary form__submit" id="emp-submit" disabled>Save Employee</button>
+            </form>
+        </div>
+    </div>
   </div>
 `,
 };

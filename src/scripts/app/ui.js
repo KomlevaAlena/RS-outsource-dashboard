@@ -63,6 +63,20 @@ function closeProjectsPanel() {
     }
 }
 
+function openEmployeesPanel() {
+    const panel = document.getElementById('employee-panel');
+    if (panel) {
+        panel.classList.add('slide-panel--open');
+    }
+}
+
+function closeEmployeesPanel() {
+    const panel = document.getElementById('employee-panel');
+    if (panel) {
+        panel.classList.remove('slide-panel--open');
+    }
+}
+
 export function initUI() {
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('sidebar-toggle');
@@ -74,6 +88,10 @@ export function initUI() {
     const addEntityBtn = document.getElementById('add-entity-btn');
     const panelCloseBtn = document.getElementById('project-panel-close');
     const panelOverlay = document.getElementById('project-panel-overlay');
+
+    // const addEntityBtn = document.getElementById('add-entity-btn');
+    const empCloseBtn = document.getElementById('employee-panel-close');
+    const empOverlay = document.getElementById('employee-panel-overlay');
 
     // Проверяем наличие элементов на странице
     if (sidebar && toggleBtn) { // Логика сворачивания сайдбара
@@ -105,6 +123,21 @@ export function initUI() {
     if (panelOverlay) {
         panelOverlay.addEventListener('click', closeProjectsPanel);
     }
+
+    if (addEntityBtn) {
+        addEntityBtn.addEventListener('click', function() {
+            const activeTab = document.querySelector('.nav-button--active').getAttribute('data-tab');// Проверяем, какой таб сейчас активен
+            
+            if (activeTab === 'projects') {
+                openProjectsPanel();
+            } else if (activeTab === 'employees') {
+                openEmployeesPanel();
+            }
+        });
+    }
+
+    if (empCloseBtn) empCloseBtn.addEventListener('click', closeEmployeesPanel);
+    if (empOverlay) empOverlay.addEventListener('click', closeEmployeesPanel);
 
     renderCurrentTab('projects', getCurrentPeriod());
 }
