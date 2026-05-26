@@ -46,8 +46,43 @@ export const components = {
       </header>
 
       <div id="table-container" class="table-container">
-        </div>
+      </div>
     </main>
+
+    <div class="slide-panel" id="project-panel">
+        <div class="slide-panel__overlay" id="slide-panel-overlay">
+        </div>
+        <div class="slide-panel__content">
+            <div class="slide-panel__header">
+                <h2>New Project</h2>
+                <button class="slide-panel__close" id="project-panel-close">×</button>
+            </div>
+        </div>
+
+        <form class="form" id="project-form" novalidate>
+            <div class="form__group">
+                <label class="form__label">Project Name</label>
+                <input type="text" id="proj-name" class="form__input" required>
+                <span class="form__error" id="error-proj-name"></span>
+            </div>
+            <div class="form__group">
+                <label class="form__label">Company Name</label>
+                <input type="text" id="proj-company" class="form__input" required>
+                <span class="form__error" id="error-proj-company"></span>
+            </div>
+            <div class="form__group">
+                <label class="form__label">Budget</label>
+                <input type="text" id="proj-budget" class="form__input" required>
+                <span class="form__error" id="error-proj-budget"></span>
+            </div>
+            <div class="form__group">
+                <label class="form__label">Employee Capacity</label>
+                <input type="text" id="proj-capacity" class="form__input" required>
+                <span class="form__error" id="error-proj-capacity"></span>
+            </div>
+            <button type="submit" class="btn btn--primary form__submit" id="proj-submit" disabled>Save Project</button>
+        </form>
+    </div>
   </div>
 `,
 };

@@ -12,7 +12,7 @@ function getCurrentPeriod() { // собирает "год-месяц" из се�
     return yearSelect.value + '-' + monthSelect.value; // .value берет значение из <option value="...">
 }
 
-function handleTabSwich(event) {
+function handleTabSwitch(event) {
     const navButtons = document.querySelectorAll('.nav-button');// 1. Находим все кнопки навигации
     const pageTitle = document.getElementById('page-title'); //2. Находим заголовок страницы и главную кнопку действия
     const addEntityBtn = document.getElementById('add-entity-btn'); // "добавить сущность кнопки"
@@ -40,7 +40,7 @@ function handleTabSwich(event) {
     renderCurrentTab(selectedTab, period); // ТЕПЕРЬ МЫ БЕРЕМ ПЕРИОД ДИНАМИЧЕСКИ!
 }
 
-function handelPeriodChange() {
+function handlePeriodChange() {
     const activeTabBtn = document.querySelector('.nav-button--active');
     const selectedTab = activeTabBtn.getAttribute('data-tab');
 
@@ -68,12 +68,12 @@ export function initUI() {
     // Логика переключения вкладок
     navButtons.forEach(function(button) {
         // Вешаем событие клика на каждую кнопку
-        button.addEventListener('click', handleTabSwich);
+        button.addEventListener('click', handleTabSwitch);
     });
 
     if (monthSelect && yearSelect) { // Добавляем слушатель события 'change' (изменение выбора)
-        monthSelect.addEventListener('change', handelPeriodChange);
-        yearSelect.addEventListener('change', handelPeriodChange);
+        monthSelect.addEventListener('change', handlePeriodChange);
+        yearSelect.addEventListener('change', handlePeriodChange);
     }
 
     renderCurrentTab('projects', getCurrentPeriod());

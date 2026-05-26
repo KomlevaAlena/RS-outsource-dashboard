@@ -1,0 +1,110 @@
+@use '../../variables';
+
+.slide-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: flex-end; // Прижимает содержимое к правому краю
+  z-index: 1000;
+  
+  // Изначально панель полностью скрыта
+  visibility: hidden;
+  pointer-events: none;
+
+  // Полупрозрачный задний фон
+  &__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  // Белая плашка с формой
+  &__content {
+    position: relative;
+    width: 400px;
+    height: 100%;
+    background: var(--bg-primary);
+    box-shadow: -4px 0 15px rgba(0, 0, 0, 0.1);
+    padding: variables.$spacing-sm;
+    display: flex;
+    flex-direction: column;
+    
+    // Сдвигаем её вправо за пределы экрана
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  &__close {
+    background: transparent;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+  }
+
+  // КЛАСС ДЛЯ ОТКРЫТОГО СОСТОЯНИЯ
+  &--open {
+    visibility: visible;
+    pointer-events: auto;
+
+    .slide-panel__overlay {
+      opacity: 1;
+    }
+
+    .slide-panel__content {
+      transform: translateX(0); // Возвращаем форму на экран
+    }
+  }
+}
+
+// Простые стили для групп полей формы
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__label {
+    font-size: variables.$font-size-sm;
+    color: var(--text-secondary);
+  }
+
+  &__input {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: variables.$border-radius-sm;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    
+    &:focus {
+      border-color: var(--accent-color);
+      outline: none;
+    }
+  }
+
+  &__error {
+    font-size: variables.$font-size-xs;
+    color: var(--danger-color);
+    min-height: 16px; // Чтобы верстка не прыгала при ошибке
+  }
+}
