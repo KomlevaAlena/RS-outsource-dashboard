@@ -49,6 +49,20 @@ function handlePeriodChange() {
     console.log('Период изменен на:', period);
 }
 
+function openProjectsPanel() {
+    const panel = document.getElementById('project-panel');
+    if (panel) {
+        panel.classList.add('slide-panel--open');
+    }
+}
+
+function closeProjectsPanel() {
+    const panel = document.getElementById('project-panel');
+    if (panel) {
+        panel.classList.remove('slide-panel--open');
+    }
+}
+
 export function initUI() {
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('sidebar-toggle');
@@ -56,6 +70,10 @@ export function initUI() {
 
     const monthSelect = document.getElementById('month-select');// Находим селекторы
     const yearSelect = document.getElementById('year-select');
+
+    const addEntityBtn = document.getElementById('add-entity-btn');
+    const panelCloseBtn = document.getElementById('project-panel-close');
+    const panelOverlay = document.getElementById('project-panel-overlay');
 
     // Проверяем наличие элементов на странице
     if (sidebar && toggleBtn) { // Логика сворачивания сайдбара
@@ -74,6 +92,18 @@ export function initUI() {
     if (monthSelect && yearSelect) { // Добавляем слушатель события 'change' (изменение выбора)
         monthSelect.addEventListener('change', handlePeriodChange);
         yearSelect.addEventListener('change', handlePeriodChange);
+    }
+
+    if (addEntityBtn) {
+        addEntityBtn.addEventListener('click', openProjectsPanel);
+    }
+
+    if (panelCloseBtn) {
+        panelCloseBtn.addEventListener('click', closeProjectsPanel);
+    }
+
+    if (panelOverlay) {
+        panelOverlay.addEventListener('click', closeProjectsPanel);
     }
 
     renderCurrentTab('projects', getCurrentPeriod());
