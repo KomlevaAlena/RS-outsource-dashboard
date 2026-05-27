@@ -6,7 +6,7 @@
 
 import { store } from './store.js';
 
-function handleDeleteProject(projectId, periodKey) {
+function handleDeleteProject(projectId, periodKey) { // --- ЛОГИКА УДАЛЕНИЯ ПРОЕКТОВ (у тебя уже есть)
     const isConfirmed = confirm('Are you sure you want to delete this project?'); // Спрашиваем подтверждение у пользователя
     if (!isConfirmed) return;
 
@@ -23,6 +23,24 @@ function handleDeleteProject(projectId, periodKey) {
     store.saveData(allData);
     console.log(`❌ Проект с ID ${projectId} успешно удален`);
     renderCurrentTab('projects', periodKey); // 5. Перерисовываем таблицу для этого же месяца, чтобы удаленная строка исчезла
+}
+
+function handleDeleteEmployee(employeeId, periodKey) {
+    const isConfirmed = confirm('Are you sure you want to remove this employee?');
+    if (!isConfirmed) return;
+
+    const monthData = store.getMonthData(periodKey);
+    // Фильтруем массив сотрудников, удаляя нужного по ID
+    monthData.employees = monthData.employees.filter(function(emp) {
+        return emp.id !== employeeId;
+    })
+
+    const allData = store.getRawData();
+    allData[periodKey] = monthData;
+    store.saveData(allData);
+    console.log(`❌ Сотрудник с ID ${employeeId} удален`);
+    // Перерисовываем вкладку сотрудников
+    renderCurrentTab('employees', periodKey);
 }
 
 function createProjectsTable(projects) { // 1. Функция для сборки таблицы проектов
@@ -61,6 +79,41 @@ function createProjectsTable(projects) { // 1. Функция для сборк�
     return  html;
 }
 
+function createEmployeesTable(employees) { // ТАБЛИЦА СОТРУДНИКОВ
+    if (employees.length === 0) {
+        return '<p class="empty-state">No employees added yet</p>';
+    }
+
+    let html = `
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Position</th>
+                <th>Age</th>
+                <th>Salary</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+
+    employees.forEach(function(emp) {
+        html += `
+            <tr>
+                <td>${emp.name}</td>
+                <td>${emp.position}</td>
+                <td>${emp.age} y.o.</td>
+                <td>${emp.salary} $</td>
+                <td><button class="btn-delete btn-delete--emp" data-id="${emp.id}">Delete</button></td>
+            </tr>
+        `;
+    });
+
+    html += '</tbody></table>';
+    return html;
+}
+
 // 2. Главная функция, которую мы будем вызывать извне
 export function renderCurrentTab(tabName, periodKey) {
     const container = document.getElementById('table-container');
@@ -78,7 +131,12 @@ export function renderCurrentTab(tabName, periodKey) {
             }
         }
     } else if (tabName === 'employees') {
-        container.innerHTML = '<p>There will be a table of employees here soon....</p>';
-        container.onclick = null; // На вкладке сотрудников удаление проектов не должно работать
+        container.innerHTML = createEmployeesTable(data.employees); // отрисовываем таблицу сотрудников
+        container.onclick = function(event) { // Делегирование кликов для сотрудников
+            if(event.target.classList.contains('btn-delete--emp')) { // Проверяем наличие класса кнопки удаления сотрудника
+                const employeeId = event.target.getAttribute('data-id');
+                handleDeleteEmployee(employeeId, periodKey);
+            }
+        };
     }
 }
