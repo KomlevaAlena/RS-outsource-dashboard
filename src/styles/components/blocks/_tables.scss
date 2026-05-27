@@ -72,3 +72,25 @@
     color: white; // При наведении заливается красным
   }
 }
+
+.table td.editable {
+  cursor: pointer;
+  position: relative;
+  
+  &:hover {
+    background-color: rgba(var(--accent-color), 0.05); // Легкая подсветка при наведении
+    color: var(--accent-color);
+  }
+}
+
+// Стиль для инпута внутри таблицы, чтобы он не разрывал ячейку
+.table-inline-input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--accent-color);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: inherit;
+  font-family: inherit;
+}

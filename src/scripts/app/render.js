@@ -43,6 +43,36 @@ function handleDeleteEmployee(employeeId, periodKey) {
     renderCurrentTab('employees', periodKey);
 }
 
+function updateEmployeeField(employeeId, field, newValue, periodKey) {
+    const monthData = store.getMonthData(periodKey);
+    const employee = monthData.employees.find(emp => emp.id === employeeId); // Находим нужного сотрудника в массиве
+
+    if (employee) {
+        // Если правим зарплату — переводим в число, если должность — оставляем строкой
+        if (field === 'salary') {
+            const numValue = Number(newValue);
+            if (isNaN(numValue) || numValue <= 0) {
+                alert('Please enter the correct salary amount');
+                renderCurrentTab('employees', periodKey); // Сбрасываем изменения на экране
+                return;
+            }
+            employee[field] = numValue;
+        } else {
+            if (newValue.trim() === '') {
+                alert('The field cannot be empty');
+                renderCurrentTab('employees', periodKey);
+                return;
+            }
+            employee[field] = newValue.trim();
+        }
+        const allData = store.getRawData();// Сохраняем в Стор
+        allData[periodKey] = monthData;
+        store.saveData(allData);
+        console.log(`📝 Сотрудник ${employeeId}: поле ${field} обновлено на ${newValue}`);
+    }
+    
+}
+
 function createProjectsTable(projects) { // 1. Функция для сборки таблицы проектов
     if (projects.length === 0) {
         return '<p class="empty-state">There are no projects yet</p>';
@@ -102,9 +132,9 @@ function createEmployeesTable(employees) { // ТАБЛИЦА СОТРУДНИК�
         html += `
             <tr>
                 <td>${emp.name}</td>
-                <td>${emp.position}</td>
+                <td class="editable" data-id="${emp.id}" data-field="position">${emp.position}</td>
                 <td>${emp.age} y.o.</td>
-                <td>${emp.salary} $</td>
+                <td class="editable" data-id="${emp.id}" data-field="salary">${emp.salary} $</td>
                 <td><button class="btn-delete btn-delete--emp" data-id="${emp.id}">Delete</button></td>
             </tr>
         `;
@@ -132,10 +162,53 @@ export function renderCurrentTab(tabName, periodKey) {
         }
     } else if (tabName === 'employees') {
         container.innerHTML = createEmployeesTable(data.employees); // отрисовываем таблицу сотрудников
+
+        // container.onclick = function(event) {
+        //     if (event.target.classList.contains('btn-delete--emp')) {
+        //         const employeeId = event.target.getAttribute('data-id');
+        //         handleDeleteEmployee(employeeId, periodKey);
+        //     }
+        // }
+
         container.onclick = function(event) { // Делегирование кликов для сотрудников
             if(event.target.classList.contains('btn-delete--emp')) { // Проверяем наличие класса кнопки удаления сотрудника
                 const employeeId = event.target.getAttribute('data-id');
                 handleDeleteEmployee(employeeId, periodKey);
+            }
+        };
+
+        container.ondblclick = function(event) { // 2.Делегирование двойных кликов (для редактирования)
+            const cell = event.target;
+            // Проверяем, что кликнули именно по редактируемой ячейке и в ней еще нет инпута
+            if (cell.classList.contains('editable') && !cell.querySelector('input')) {
+                const currentText = cell.textContent.replace(' $', '').trim(); // Убираем знак доллара, если он есть
+                const employeeId = cell.getAttribute('data-id');
+                const field = cell.getAttribute('data-field');
+                // Создаем инпут
+                const input = document.createElement('input');
+                input.type = field ==='salary' ? 'number' : 'text';
+                input.value = currentText;
+                input.className = 'table-inline-input';
+                // Очищаем ячейку и вставляем туда инпут
+                cell.innerHTML = '';
+                cell.appendChild(input);
+                input.focus(); // Фокус
+                // Функция завершения редактирования
+                function finishEditing() {
+                    const newValue = input.value;
+                    updateEmployeeField(employeeId, field, newValue, periodKey);
+                    renderCurrentTab('employees', periodKey); // Перерисовываем таблицу
+                }
+                // Если нажали Enter — сохраняем
+                input.onkeydown = function(e) {
+                    if (e.key === 'Enter') {
+                        finishEditing();
+                    }
+                };
+                // Если кликнули в любое другое место экрана — сохраняем
+                input.onblur = function() {
+                    finishEditing();
+                };
             }
         };
     }
