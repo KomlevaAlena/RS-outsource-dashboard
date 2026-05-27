@@ -10,6 +10,7 @@ import { store } from './scripts/app/store.js';
 import { initialData } from './scripts/app/seed-data.js';
 import { initUI } from './scripts/app/ui.js';
 import { initProjectForm } from './scripts/app/project-form.js';
+import { initEmployeeForm } from './scripts/app/employee-form.js';
 
 // ПРОВЕРКА: Если в памяти совсем пусто, запишем туда наши начальные данные
 const currentData = store.getRawData();
@@ -40,5 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Инициализирую обработчики событий интерфейса...');
     initUI();
     initProjectForm();
+    initEmployeeForm();
   }, 0);
 });
