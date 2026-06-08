@@ -94,3 +94,39 @@
   font-size: inherit;
   font-family: inherit;
 }
+
+// Контейнер для карточек
+.fin-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); // Карточки сами делят место на экране
+  gap: variables.$spacing-md;
+  margin-bottom: variables.$spacing-lg; // Отступ вниз до таблицы
+}
+
+// Сама карточка
+.fin-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: variables.$border-radius-md;
+  padding: variables.$spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+
+  // Маленький серый текст-заголовок
+  &__title {
+    font-size: variables.$font-size-xs;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  // Большая жирная цифра
+  &__value {
+    font-size: 1.5rem; // Крупный размер
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+}

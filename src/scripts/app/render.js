@@ -144,6 +144,42 @@ function createEmployeesTable(employees) { // ТАБЛИЦА СОТРУДНИК�
     return html;
 }
 
+
+// Функция для сборки финансовых карточек (виджетов).
+//  берет массив проектов и считает общие показатели.
+
+function createFinancialSummary(projects) {
+    const totalProjects = projects.length; // 1. Считаем количество проектов (просто смотрим на длину массива)
+
+    let totalBudget = 0; // 2. Считаем общий бюджет и общую вместимость. Сначала они равны нулю.
+    let totalCapacity = 0;
+
+    projects.forEach(function(project) { //проходим по массиву и суммируем
+        totalBudget += project.budget;
+        totalCapacity += (project.capacity || 0); // Если capacity забыли указать, прибавим 0
+    });
+
+    //собираем html .toLocaleString() встроенный в браузер «украшатель» чисел, добавляет проблемы в больших числах
+    let html = ` 
+        <div class="fin-summary">
+            <div class="fin-card">
+                <span class="fin-card__title">Active Projects</span>
+                <span class="fin-card__value">${totalProjects}</span>
+            </div>
+            <div class="fin-card">
+                <span class="fin-card__title">Total Budget</span>
+                <span class="fin-card__value">${totalBudget.toLocaleString()} $</span>
+            </div>
+            <div class="fin-card">
+                <span class="fin-card__title">Total Capacity</span>
+                <span class="fin-card__value">${totalCapacity} p.</span>
+            </div>
+        </div>
+        `;
+
+    return html;
+}
+
 // 2. Главная функция, которую мы будем вызывать извне
 export function renderCurrentTab(tabName, periodKey) {
     const container = document.getElementById('table-container');
@@ -152,7 +188,11 @@ export function renderCurrentTab(tabName, periodKey) {
     const data = store.getMonthData(periodKey);// Получаем свежие данные из нашего хранилища
 
     if (tabName === 'projects') {
-        container.innerHTML = createProjectsTable(data.projects);
+        // container.innerHTML = createProjectsTable(data.projects);
+        const summaryHtml = createFinancialSummary(data.projects);
+        const tableHtml = createProjectsTable(data.projects);
+
+        container.innerHTML = summaryHtml + tableHtml;
         // НАСТРОЙКА ДЕЛЕГИРОВАНИЯ СОБЫТИЙ Очищаем старые слушатели (просто перезаписывая onclick), чтобы они не плодились
         container.onclick = function(event) {
             if (event.target.classList.contains('btn-delete')) { // Проверяем, содержит ли элемент, по которому кликнули, класс 'btn-delete'
@@ -162,13 +202,6 @@ export function renderCurrentTab(tabName, periodKey) {
         }
     } else if (tabName === 'employees') {
         container.innerHTML = createEmployeesTable(data.employees); // отрисовываем таблицу сотрудников
-
-        // container.onclick = function(event) {
-        //     if (event.target.classList.contains('btn-delete--emp')) {
-        //         const employeeId = event.target.getAttribute('data-id');
-        //         handleDeleteEmployee(employeeId, periodKey);
-        //     }
-        // }
 
         container.onclick = function(event) { // Делегирование кликов для сотрудников
             if(event.target.classList.contains('btn-delete--emp')) { // Проверяем наличие класса кнопки удаления сотрудника
