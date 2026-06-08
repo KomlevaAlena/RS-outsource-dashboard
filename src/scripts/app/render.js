@@ -183,6 +183,83 @@ function createFinancialSummary(projects) {
     return html;
 }
 
+// function openAssignModal(projectId, periodKey) { //Функция открытия модального окна назначения. Находит сотрудников текущего месяца и наполняет ими выпадающий список
+//     const modal = document.getElementById('assign-modal');
+//     const projectInput = document.getElementById('assign-project-id');
+//     const empSelect = document.getElementById('assign-emp-select');
+//     // ДОБАВЛЯЕМ ПРОВЕРКУ НАЛИЧИЯ ЭЛЕМЕНТОВ В DOM
+//     console.log('Поиск элементов модалки:', { modal, projectInput, empSelect });
+
+//     if (modal || !empSelect) return;
+//     // 1. Прячем ID проекта в скрытое поле
+//     projectInput.value = projectId;
+//     // 2. Берем данные за этот месяц, чтобы узнать, какие сотрудники у нас вообще есть
+//     const monthData = store.getMonthData(periodKey);
+//     const employees = monthData.employees || [];
+//     // 3. Собираем список сотрудников для выпадающего меню (теги <option>)
+//     if (employees.length === 0) {
+//         empSelect.innerHTML = '<option value="">-- No employees available --</option>';
+//     } else {
+//         let optionsHtml = '<option value="">-- Select an employee --</option>';
+//         employees.forEach(function(emp){
+//             optionsHtml += `<option value="${emp.id}">${emp.name} (${emp.position})</option>`;
+//         });
+//         empSelect.innerHTML = optionsHtml;
+//     }
+//     // 4. Сбрасываем ползунок на 50% по умолчанию
+//     document.getElementById('assign-capacity-range').value = 50;
+//     document.getElementById('assign-range-value').textContent = '50';
+//     // 5. Открываем окно!
+//     modal.classList.add('modal--open');
+//     console.log('Класс modal--open успешно добавлен модалке!');
+// }
+ 
+function openAssignModal(projectId, periodKey) {
+    const modal = document.getElementById('assign-modal');
+    const projectInput = document.getElementById('assign-project-id');
+    const empSelect = document.getElementById('assign-emp-select');
+
+    console.log('Поиск элементов модалки:', { modal, projectInput, empSelect });
+
+    if (!modal || !empSelect) {
+        console.error('❌ Ошибка: Элементы модального окна не найдены в HTML!');
+        return;
+    }
+    // Записываем ID проекта
+    if (projectInput) {
+        projectInput.value = projectId;
+    }
+    // Извлекаем сотрудников текущего месяца
+    const monthData = store.getMonthData(periodKey);
+    // Делаем жесткую проверку: если employees вообще нет, берем пустой массив []
+    const employees = (monthData && monthData.employees) ? monthData.employees : [];
+
+    console.log('Список сотрудников для модалки:', employees);
+    // Собираем список сотрудников для выпадающего меню
+    if (employees.length === 0) {
+        empSelect.innerHTML = '<option value="">-- No employees available --</option>';
+    } else {
+        let optionsHtml = '<option value="">-- Select an employee --</option>';
+        
+        employees.forEach(function(emp) {
+            // Используем оператор || 'Unknown', чтобы если поля пустые, код не падал
+            const name = emp.name || 'Unknown Name';
+            const position = emp.position || 'No Position';
+            optionsHtml += `<option value="${emp.id}">${name} (${position})</option>`;
+        });
+        
+        empSelect.innerHTML = optionsHtml;
+    }
+    // Безопасно выставляем значения ползунка
+    const rangeInput = document.getElementById('assign-capacity-range');
+    const rangeValue = document.getElementById('assign-range-value');
+    if (rangeInput) rangeInput.value = 50;
+    if (rangeValue) rangeValue.textContent = '50';
+    // Включаем модалку!
+    modal.classList.add('modal--open');
+    console.log('🚀 Класс modal--open успешно добавлен!');
+}
+
 // 2. Главная функция, которую мы будем вызывать извне
 export function renderCurrentTab(tabName, periodKey) {
     const container = document.getElementById('table-container');
@@ -198,9 +275,16 @@ export function renderCurrentTab(tabName, periodKey) {
         container.innerHTML = summaryHtml + tableHtml;
         // НАСТРОЙКА ДЕЛЕГИРОВАНИЯ СОБЫТИЙ Очищаем старые слушатели (просто перезаписывая onclick), чтобы они не плодились
         container.onclick = function(event) {
+            console.log('Кликнули по элементу:', event.target); // <-- ДОБАВЬ ЭТУ СТРОЧКУ
             if (event.target.classList.contains('btn-delete')) { // Проверяем, содержит ли элемент, по которому кликнули, класс 'btn-delete'
                 const projectId = event.target.getAttribute('data-id'); // Вытаскиваем ID проекта из атрибута data-id кнопки
                 handleDeleteProject(projectId, periodKey); // Запускаем нашу функцию удаления
+            }
+            // 2.Клик по кнопке НАЗНАЧЕНИЯ (Assign)
+            if (event.target.classList.contains('btn-assign')) {
+                console.log('Ура, поймали клик по кнопке Assign!'); // <-- ДОБАВЬ ЭТУ СТРОЧКУ
+                const projectId = event.target.getAttribute('data-id');
+                openAssignModal(projectId, periodKey);// Вызываем функцию открытия окна
             }
         }
     } else if (tabName === 'employees') {
