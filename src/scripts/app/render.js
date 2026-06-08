@@ -92,7 +92,7 @@ function createProjectsTable(projects) { // 1. Функция для сборк�
         </thead>
         <tbody>
     `;
-    // Добавляем строки для каждого проекта
+
     projects.forEach(function(project) {
         html += `
             <tr>
@@ -100,7 +100,10 @@ function createProjectsTable(projects) { // 1. Функция для сборк�
                 <td>${project.projectName}</td>
                 <td>${project.budget} $</td>
                 <td>${project.capacity || 0} p.</td>
-                <td><button class="btn-delete" data-id="${project.id}">Delete</button></td>
+                <td>
+                    <button class="btn-assign" data-id="${project.id}">Assign</button>
+                    <button class="btn-delete" data-id="${project.id}">Delete</button>
+                </td>
             </tr>
         `;
     });

@@ -55,8 +55,11 @@
   font-size: variables.$font-size-base;
 }
 
+
+
 // Стильная кнопка удаления
-.btn-delete {
+.btn-delete,
+.btn-assign {
   background: transparent;
   border: 1px solid var(--danger-color);
   color: var(--danger-color);
@@ -69,6 +72,16 @@
 
   &:hover {
     background-color: var(--danger-color);
+    color: white; // При наведении заливается красным
+  }
+}
+
+.btn-assign {
+  border: 1px solid var(--text-primary);
+  color: var(--text-primary);
+
+  &:hover {
+    background-color: var(--text-primary);
     color: white; // При наведении заливается красным
   }
 }

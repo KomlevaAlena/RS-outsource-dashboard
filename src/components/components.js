@@ -116,5 +116,31 @@ export const components = {
         </div>
     </div>
   </div>
+  <div class="modal" id="assign-modal">
+      <div class="modal__overlay" id="assign-modal-overlay"></div>
+      <div class="modal__content">
+          <div class="modal__header">
+              <h2>Assign Employee to Project</h2>
+              <button class="modal__close" id="assign-modal-close">×</button>
+          </div>
+          
+          <form id="assign-form" class="form">
+              <input type="hidden" id="assign-project-id">
+
+              <div class="form__group">
+                  <label class="form__label">Select Employee</label>
+                  <select id="assign-emp-select" class="form__input" required>
+                      </select>
+              </div>
+
+              <div class="form__group">
+                  <label class="form__label">Utilization / Capacity (<span id="assign-range-value">50</span>%)</label>
+                  <input type="range" id="assign-capacity-range" min="10" max="100" step="10" value="50" class="form__range">
+              </div>
+
+              <button type="submit" class="btn btn--primary form__submit">Confirm Assignment</button>
+          </form>
+      </div>
+  </div>
 `,
 };

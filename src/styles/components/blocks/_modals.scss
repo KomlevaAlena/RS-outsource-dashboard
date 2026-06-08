@@ -1,0 +1,84 @@
+@use '../../variables';
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2000; // Очень высокий слой, чтобы быть ПОВЕРХ сайдбара и панелей
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none; // Пока закрыто, сквозь него можно кликать
+  transition: all 0.3s ease;
+
+  // Модификатор, который делает окно видимым
+  &--open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  // Темный задний фон
+  &__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px); // Эффект размытия заднего плана
+  }
+
+  // Белая коробочка по центру с контентом
+  &__content {
+    position: relative;
+    background: var(--bg-primary);
+    width: 100%;
+    max-width: 450px; // Аккуратная ширина
+    padding: variables.$spacing-lg;
+    border-radius: variables.$border-radius-lg;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    z-index: 10;
+    transform: scale(0.9); // Небольшое уменьшение для красивой анимации
+    transition: transform 0.3s ease;
+  }
+
+  &--open &__content {
+    transform: scale(1); // При открытии плавно увеличивается до нормы
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: variables.$spacing-md;
+
+    h2 {
+      font-size: variables.$font-size-base;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+  }
+
+  &__close {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    line-height: 1;
+    
+    &:hover {
+      color: var(--text-primary);
+    }
+  }
+}
+
+// Простой стиль для нашего ползунка (слайдера)
+.form__range {
+  width: 100%;
+  margin-top: 8px;
+  cursor: pointer;
+}
