@@ -3,6 +3,8 @@
  * Логика закрытия модального окна и обработки ползунка процентов.
  */
 
+import { store } from './store.js';
+
 // Функция, которая просто убирает класс видимости
 export function closeAssignModal() {
     const modal = document.getElementById('assign-modal');
@@ -38,12 +40,42 @@ export function initAssignModal() {
         };
     }
 
-    // Слушатель отправки формы (пока оставляем заглушку)
+    // Слушатель отправки формы
     if (form) {
         form.onsubmit = function(event) {
             event.preventDefault(); // Запрещаем перезагрузку страницы
             
-            alert('Great! Logic for saving will be here soon.');
+            // Вытаскиваем данные из полей модалки
+            const projectId = document.getElementById('assign-project-id').value;
+            const employeeId = document.getElementById('assign-emp-select').value;
+            const capacity = Number(rangeInput.value);
+            // Получаем текущий период (год и месяц) из сайдбара
+            const monthSelect = document.getElementById('month-select');
+            const yearSelect = document.getElementById('year-select');
+            const periodKey = yearSelect.value + '-' + monthSelect.value;
+            // Проверка выбора сотрудника?
+            if (!employeeId) {
+                alert('Please select an employee first!');
+                return;
+            }
+            const monthData = store.getMonthData(periodKey);// 1. Достаем данные текущего месяца
+            if (!monthData.assignments) { // 2. Если 'assignments' еще нет в этом месяце — создаем его пустым
+                monthData.assignments = [];
+            }
+            // 3. обьект с назначением сотрудника
+            const newAssignment = {
+                projectId: projectId,
+                employeeId: employeeId,
+                capacity: capacity
+            };
+            monthData.assignments.push(newAssignment); // добавляем назначение
+
+            const allData = store.getRawData(); // 5. Сохраняем обновленный месяц обратно в LocalStorage
+            allData[periodKey] = monthData;
+            store.saveData(allData);
+
+            console.log('🔗 Успешное назначение в Стор:', newAssignment);
+            alert('Employee successfully assigned to the project!');
             
             closeAssignModal();
         };
