@@ -82,3 +82,65 @@
   margin-top: 8px;
   cursor: pointer;
 }
+
+// В самый конец файла src/styles/components/blocks/_modals.scss
+
+// Стилизация ссылки вместимости в таблице
+.clickable-capacity {
+  cursor: pointer;
+  .capacity-link {
+    color: var(--accent-color);
+    text-decoration: underline;
+    font-weight: 600;
+    
+    &:hover {
+      color: #0056b3; // Чуть темнее при наведении
+    }
+  }
+}
+
+// Список команды в модальном окне
+.team-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.team-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: var(--border-radius-sm);
+  border-left: 4px solid var(--accent-color); // Красивая цветная полосочка слева
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__name {
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+  }
+
+  &__position {
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+  }
+
+  &__capacity {
+    background: rgba(var(--accent-color), 0.1);
+    color: var(--accent-color);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+  }
+}
+

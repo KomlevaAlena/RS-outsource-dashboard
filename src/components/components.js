@@ -142,5 +142,18 @@ export const components = {
           </form>
       </div>
   </div>
+
+  <div class="modal" id="details-modal">
+      <div class="modal__overlay" id="details-modal-overlay"></div>
+      <div class="modal__content">
+          <div class="modal__header">
+              <h2 id="details-modal-title">Project Team</h2>
+              <button class="modal__close" id="details-modal-close">×</button>
+          </div>
+          
+          <div id="details-modal-body">
+              </div>
+      </div>
+  </div>
 `,
 };

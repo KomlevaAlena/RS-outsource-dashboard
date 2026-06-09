@@ -81,6 +81,7 @@ export function initUI() {
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('sidebar-toggle');
     const navButtons = document.querySelectorAll('.nav-button'); // Находим все кнопки вкладок
+    const tabButtons = document.querySelectorAll('.sidebar__nav-btn');
 
     const monthSelect = document.getElementById('month-select');// Находим селекторы
     const yearSelect = document.getElementById('year-select');
@@ -92,6 +93,34 @@ export function initUI() {
     // const addEntityBtn = document.getElementById('add-entity-btn');
     const empCloseBtn = document.getElementById('employee-panel-close');
     const empOverlay = document.getElementById('employee-panel-overlay');
+
+    if (!monthSelect || !yearSelect) return;
+    // 1. Проверяем, есть ли сохраненный период в памяти
+    const savedMonth = localStorage.getItem('app-selected-month');
+    const savedYear = localStorage.getItem('app-selected-year');
+    // Если есть — выставляем их в селекты, если нет — оставляем дефолтные (например, текущие)
+    if (savedMonth) monthSelect.value = savedMonth;
+    if (savedYear) yearSelect.value = savedYear;
+    // Функция для получения текущего ключа периода
+    function getPeriodKey() {
+        return yearSelect.value + '-' + monthSelect.value;
+    }
+    let activeTab = 'projects';// Определяем, какая вкладка сейчас активна (по умолчанию 'projects')
+    // 2. Слушаем изменение МЕСЯЦА
+    monthSelect.addEventListener('change', function() {
+        localStorage.setItem('app-selected-month', monthSelect.value);
+        console.log('📅 Месяц изменен на:', monthSelect.value);
+        renderCurrentTab(activeTab, getPeriodKey());
+    });
+    // 3. Слушаем изменение ГОДА
+    yearSelect.addEventListener('change', function() {
+        // Запоминаем выбор пользователя в память браузера!
+        localStorage.setItem('app-selected-year', yearSelect.value);
+        
+        console.log('📅 Год изменен на:', yearSelect.value);
+        renderCurrentTab(activeTab, getPeriodKey());
+    });
+
 
     // Проверяем наличие элементов на странице
     if (sidebar && toggleBtn) { // Логика сворачивания сайдбара
@@ -141,5 +170,3 @@ export function initUI() {
 
     renderCurrentTab('projects', getCurrentPeriod());
 }
-
-

@@ -99,7 +99,9 @@ function createProjectsTable(projects) { // 1. Функция для сборк�
                 <td>${project.companyName}</td>
                 <td>${project.projectName}</td>
                 <td>${project.budget} $</td>
-                <td>${project.capacity || 0} p.</td>
+                <td class="clickable-capacity" data-id="${project.id}">
+                    <span class="capacity-link">${project.capacity || 0} p.</span>
+                </td>
                 <td>
                     <button class="btn-assign" data-id="${project.id}">Assign</button>
                     <button class="btn-delete" data-id="${project.id}">Delete</button>
@@ -183,36 +185,60 @@ function createFinancialSummary(projects) {
     return html;
 }
 
-// function openAssignModal(projectId, periodKey) { //Функция открытия модального окна назначения. Находит сотрудников текущего месяца и наполняет ими выпадающий список
-//     const modal = document.getElementById('assign-modal');
-//     const projectInput = document.getElementById('assign-project-id');
-//     const empSelect = document.getElementById('assign-emp-select');
-//     // ДОБАВЛЯЕМ ПРОВЕРКУ НАЛИЧИЯ ЭЛЕМЕНТОВ В DOM
-//     console.log('Поиск элементов модалки:', { modal, projectInput, empSelect });
+function openDetailsModal(projectId, periodKey) { //Функция открытия поп-апа со списком назначенных сотрудников.
+    console.log('📖 ЧИТАЕМ НАЗНАЧЕНИЯ. Ключ периода:', periodKey);
 
-//     if (modal || !empSelect) return;
-//     // 1. Прячем ID проекта в скрытое поле
-//     projectInput.value = projectId;
-//     // 2. Берем данные за этот месяц, чтобы узнать, какие сотрудники у нас вообще есть
-//     const monthData = store.getMonthData(periodKey);
-//     const employees = monthData.employees || [];
-//     // 3. Собираем список сотрудников для выпадающего меню (теги <option>)
-//     if (employees.length === 0) {
-//         empSelect.innerHTML = '<option value="">-- No employees available --</option>';
-//     } else {
-//         let optionsHtml = '<option value="">-- Select an employee --</option>';
-//         employees.forEach(function(emp){
-//             optionsHtml += `<option value="${emp.id}">${emp.name} (${emp.position})</option>`;
-//         });
-//         empSelect.innerHTML = optionsHtml;
-//     }
-//     // 4. Сбрасываем ползунок на 50% по умолчанию
-//     document.getElementById('assign-capacity-range').value = 50;
-//     document.getElementById('assign-range-value').textContent = '50';
-//     // 5. Открываем окно!
-//     modal.classList.add('modal--open');
-//     console.log('Класс modal--open успешно добавлен модалке!');
-// }
+    const modal = document.getElementById('details-modal');
+    const modalBody = document.getElementById('details-modal-body');
+    const modalTitle = document.getElementById('details-modal-title');
+
+    if (!modal || !modalBody) return;
+    // перед чтением заставляем Стор перечитать LocalStorage, чтобы поймать только что сохраненного сотрудника!
+    if (typeof store.loadFromLocalStorage === 'function') {
+        store.loadFromLocalStorage(); 
+    }
+
+    const monthData = store.getMonthData(periodKey);
+    const projects = monthData.projects || [];
+    const employees = monthData.employees || [];
+    const assignments = monthData.assignments || [];
+
+    console.log('Проверяем, что пришло из базы для проекта:', {
+        projectId: projectId,
+        allAssignmentsInMonth: assignments,
+        filtered: assignments.filter(asm => asm.projectId === projectId)
+    });
+
+    const currentProject = projects.find(p => p.id === projectId); // Находим сам проект, чтобы написать его имя в заголовке
+    if (currentProject) {
+        modalTitle.textContent = `Team for "${currentProject.projectName}"`;
+    }
+    const projectAssignments = assignments.filter(asm => String(asm.projectId) === String(projectId)) // Фильтруем «записки», оставляя только те, которые привязаны к этому проекту
+    if (projectAssignments.length === 0) {
+        modalBody.innerHTML = '<p class="empty-state">No employees assigned to this project yet.</p>';
+    } else {
+        let listHtml = '<ul class="team-list">'; // Собираем HTML-список людей
+        projectAssignments.forEach(function(asm) {
+            const employee = employees.find(emp => emp.id === asm.employeeId);// Ищем данные самого сотрудника по его ID
+            if (employee) {
+                listHtml += `
+                    <li class="team-item">
+                        <div class="team-item__info">
+                            <strong class="team-item__name">${employee.name}</strong>
+                            <span class="team-item__position">${employee.position}</span>
+                        </div>
+                        <span class="team-item__capacity">${asm.capacity}% load</span>
+                    </li>
+                `;
+            }
+        });
+
+        listHtml += '</ul>';
+        modalBody.innerHTML = listHtml;
+    }
+    // Открываем модалку!
+    modal.classList.add('modal--open');
+}
  
 function openAssignModal(projectId, periodKey) {
     const modal = document.getElementById('assign-modal');
@@ -286,7 +312,13 @@ export function renderCurrentTab(tabName, periodKey) {
                 const projectId = event.target.getAttribute('data-id');
                 openAssignModal(projectId, periodKey);// Вызываем функцию открытия окна
             }
-        }
+            // 3. Клик по ячейке Capacity или по тексту внутри неё
+            const capacityCell = event.target.closest('.clickable-capacity');
+            if (capacityCell) {
+                const projectId = capacityCell.getAttribute('data-id');
+                openDetailsModal(projectId, periodKey);
+            }
+        };
     } else if (tabName === 'employees') {
         container.innerHTML = createEmployeesTable(data.employees); // отрисовываем таблицу сотрудников
 
@@ -332,4 +364,18 @@ export function renderCurrentTab(tabName, periodKey) {
             }
         };
     }
+
+    // container.onclick = function(event) {
+    //     console.log('Кликнули по элементу:', event.target);
+
+    //     if (event.target.classList.contains('btn-delete')) {
+    //         const periodId = event.target.getAttribute('data-id');
+    //         handleDeleteProject(periodId, periodKey);
+    //     }
+
+    //     if (event.target.classList.contains('btn-assign')) {
+    //         const projectId = event.target.getAttribute('data-id');
+    //         openAssignModal(projectId, periodKey);
+    //     }
+    // }
 }

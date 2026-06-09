@@ -53,6 +53,8 @@ export function initAssignModal() {
             const monthSelect = document.getElementById('month-select');
             const yearSelect = document.getElementById('year-select');
             const periodKey = yearSelect.value + '-' + monthSelect.value;
+            
+            console.log('✏️ СОХРАНЯЕМ НАЗНАЧЕНИЕ. Ключ периода:', periodKey);
             // Проверка выбора сотрудника?
             if (!employeeId) {
                 alert('Please select an employee first!');
@@ -78,6 +80,15 @@ export function initAssignModal() {
             alert('Employee successfully assigned to the project!');
             
             closeAssignModal();
+        };
+    }
+
+    const detailsModal = document.getElementById('details-modal');
+    if (detailsModal) {
+        detailsModal.onclick = function(event) {
+            if (event.target.id === 'details-modal-overlay' || event.target.id === 'details-modal-close') {
+                detailsModal.classList.remove('modal--open');
+            }
         };
     }
 }
