@@ -53,7 +53,7 @@ export function initAssignModal() {
             const monthSelect = document.getElementById('month-select');
             const yearSelect = document.getElementById('year-select');
             const periodKey = yearSelect.value + '-' + monthSelect.value;
-            
+
             console.log('✏️ СОХРАНЯЕМ НАЗНАЧЕНИЕ. Ключ периода:', periodKey);
             // Проверка выбора сотрудника?
             if (!employeeId) {
@@ -64,22 +64,39 @@ export function initAssignModal() {
             if (!monthData.assignments) { // 2. Если 'assignments' еще нет в этом месяце — создаем его пустым
                 monthData.assignments = [];
             }
+            // УМНАЯ ПРОВЕРКА: нет ли уже сотрудника на этом проекте?
+            const existingAssignment = monthData.assignments.find(function(asm) {
+                return String(asm.projectId) === String(projectId) && String(asm.employeeId) === String(employeeId);
+            });
+            if (existingAssignment) {
+                console.log('🔄 Сотрудник уже на проекте. Обновляем capacity с', existingAssignment.capacity, 'на', capacity);
+                existingAssignment.capacity = capacity; // Если нашли — просто перезаписываем ему проценты загрузки
+            } else { 
+                const newAssignment = {
+                    projectId: projectId,
+                    employeeId: employeeId,
+                    capacity: capacity
+                };
+                monthData.assignments.push(newAssignment);
+                console.log('🔗 Новое назначение добавлено в Стор:', newAssignment);
+            }
             // 3. обьект с назначением сотрудника
-            const newAssignment = {
-                projectId: projectId,
-                employeeId: employeeId,
-                capacity: capacity
-            };
-            monthData.assignments.push(newAssignment); // добавляем назначение
+            // const newAssignment = {
+            //     projectId: projectId,
+            //     employeeId: employeeId,
+            //     capacity: capacity
+            // };
+            // monthData.assignments.push(newAssignment); // добавляем назначение
 
             const allData = store.getRawData(); // 5. Сохраняем обновленный месяц обратно в LocalStorage
             allData[periodKey] = monthData;
             store.saveData(allData);
 
-            console.log('🔗 Успешное назначение в Стор:', newAssignment);
+            // console.log('🔗 Успешное назначение в Стор:', newAssignment);
             alert('Employee successfully assigned to the project!');
             
             closeAssignModal();
+            renderCurrentTab('projects', periodKey);
         };
     }
 
