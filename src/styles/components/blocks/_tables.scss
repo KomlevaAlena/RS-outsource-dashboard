@@ -55,11 +55,9 @@
   font-size: variables.$font-size-base;
 }
 
-
-
 // Стильная кнопка удаления
 .btn-delete,
-.btn-assign {
+.btn-assign{
   background: transparent;
   border: 1px solid var(--danger-color);
   color: var(--danger-color);
