@@ -1,0 +1,113 @@
+@use '../../variables';
+
+// Блок модального окна календаря отпусков
+.calendar-modal {
+    max-width: 450px;
+    width: 100%;
+}
+
+// Сетка календаря
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: variables.$gap-sm;
+    margin-bottom: variables.$spacing-sm;
+    font-family: var(--font-family);
+}
+
+// Заголовки дней недели (Mon, Tue...)
+.calendar-header-cell {
+    font-family: variables.$font-bold;
+    font-size: variables.$font-size-xs;
+    text-align: center;
+    padding: variables.$gap-sm 0;
+    color: var(--text-secondary);
+    background-color: var(--bg-secondary);
+    border-radius: variables.$border-radius-sm;
+
+    // Выходные в заголовках
+    &--weekend {
+        background-color: rgba(#ff6b6b, 0.1); // Используем цвет опасности с прозрачностью
+        color: var(--danger-color);
+    }
+}
+
+// Ячейки дней месяца
+.calendar-day-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: variables.$font-medium;
+    font-size: variables.$font-size-sm;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: variables.$border-radius-sm;
+    color: var(--text-primary);
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+
+    // Ховер-эффект на дни (исключая пустые ячейки)
+    &:hover:not(&--empty) {
+        background-color: var(--todo-hover);
+        border-color: var(--accent-color);
+    }
+
+    // Пустые ячейки для сдвига дат в начале месяца
+    &--empty {
+        background-color: transparent;
+        border-color: transparent;
+        cursor: default;
+    }
+
+    // Выходные дни (Суббота, Воскресенье)
+    &--weekend {
+        background-color: var(--bg-secondary);
+        color: var(--danger-color);
+    }
+
+    // СОСТОЯНИЕ: Выбранный день отпуска (Оранжевый акцент по ТЗ)
+    &--selected {
+        background-color: #ff9800 !important; // Оставляем сочный оранжевый для явного контраста отпуска
+        color: #ffffff !important;
+        border-color: #e65100 !important;
+        font-family: variables.$font-bold;
+        box-shadow: 0 2px 4px rgba(230, 81, 0, 0.3);
+    }
+}
+
+// Блок текстовой информации и диапазонов
+.calendar-info {
+    font-family: var(--font-family);
+    margin-top: variables.$spacing-sm;
+    padding-top: variables.$spacing-sm;
+    border-top: 1px solid var(--border-color);
+
+    // Строка "Working Days: X/Y days"
+    #calendar-working-days {
+        font-family: variables.$font-bold;
+        font-size: variables.$font-size-sm;
+        color: var(--text-primary);
+        margin-bottom: variables.$gap-sm;
+    }
+
+    // Заголовок "Selected Vacations:"
+    .vacation-ranges-title {
+        font-size: variables.$font-size-xs;
+        color: var(--text-secondary);
+        margin-bottom: variables.$border-radius-sm;
+    }
+
+    // Сам список диапазонов дат
+    #calendar-vacation-ranges {
+        font-family: variables.$font-secondary;
+        font-size: variables.$font-size-sm;
+        color: var(--text-primary);
+        background-color: var(--bg-secondary);
+        padding: variables.$gap-sm;
+        border-radius: variables.$border-radius-sm;
+        border-left: 3px solid var(--accent-color);
+        min-height: 24px;
+    }
+}

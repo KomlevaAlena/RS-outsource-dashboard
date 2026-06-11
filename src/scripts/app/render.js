@@ -5,6 +5,7 @@
  */
 
 import { store } from './store.js';
+import { openVacationCalendar } from './vacation.js';
 
 function handleDeleteProject(projectId, periodKey) { // --- ЛОГИКА УДАЛЕНИЯ ПРОЕКТОВ
     const isConfirmed = confirm('Are you sure you want to delete this project?'); // Спрашиваем подтверждение у пользователя
@@ -139,7 +140,10 @@ function createEmployeesTable(employees) { // ТАБЛИЦА СОТРУДНИК�
                 <td class="editable" data-id="${emp.id}" data-field="position">${emp.position}</td>
                 <td>${emp.age} y.o.</td>
                 <td class="editable" data-id="${emp.id}" data-field="salary">${emp.salary} $</td>
-                <td><button class="btn-delete btn-delete--emp" data-id="${emp.id}">Delete</button></td>
+                <td>
+                    <button class="btn-delete btn-delete--emp" data-id="${emp.id}">Delete</button>
+                    <button class="btn-availability" data-id="${emp.id}">Availability</button>
+                </td>
             </tr>
         `;
     });
@@ -356,7 +360,15 @@ export function renderCurrentTab(tabName, periodKey) {
         container.innerHTML = createEmployeesTable(data.employees);
 
         container.onclick = function(event) {
-            if(event.target.classList.contains('btn-delete--emp')) {
+
+            if (event.target.classList.contains('btn-availability')) { // Ловим клик по кнопке отпусков
+                const employeeId = event.target.getAttribute('data-id');
+                console.log(`📅 Нажали календарь сотрудника с ID: ${employeeId}`);
+                // вызов функции открытия календаря:
+                openVacationCalendar(employeeId, periodKey);
+            }
+
+            if(event.target.classList.contains('btn-delete--emp')) { 
                 const employeeId = event.target.getAttribute('data-id');
                 handleDeleteEmployee(employeeId, periodKey);
             }

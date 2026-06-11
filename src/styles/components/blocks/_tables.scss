@@ -57,7 +57,10 @@
 
 // Стильная кнопка удаления
 .btn-delete,
-.btn-assign{
+.btn-assign,
+.btn-availability,
+.btn-save-vacation,
+.modal__close {
   background: transparent;
   border: 1px solid var(--danger-color);
   color: var(--danger-color);
@@ -74,7 +77,9 @@
   }
 }
 
-.btn-assign {
+.btn-assign,
+.btn-availability,
+.btn-save-vacation {
   border: 1px solid var(--text-primary);
   color: var(--text-primary);
 

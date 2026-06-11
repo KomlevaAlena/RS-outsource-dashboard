@@ -155,5 +155,42 @@ export const components = {
               </div>
       </div>
   </div>
+
+  <div class="modal" id="details-modal">
+      <div class="modal__overlay" id="details-modal-overlay"></div>
+      <div class="modal__content">
+          <div class="modal__header">
+              <h2 id="details-modal-title">Project Team</h2>
+              <button class="modal__close" id="details-modal-close">×</button>
+          </div>
+          
+          <div id="details-modal-body">
+              </div>
+      </div>
+  </div>
+
+  <div class="modal" id="vacation-modal">
+      <div class="modal__overlay" id="vacation-modal-overlay"></div>
+      <div class="modal__content calendar-modal">
+          <div class="modal__header">
+              <h2 id="vacation-modal-title">Availability Calendar</h2>
+              <button class="modal__close" id="vacation-modal-close">×</button>
+          </div>
+          
+          <div class="modal__body">
+              <div id="calendar-grid-container"></div>
+              
+              <div class="calendar-info" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
+                  <p id="calendar-working-days" style="font-weight: bold; margin-bottom: 8px;">Working Days: --/-- days</p>
+                  <p class="vacation-ranges-title" style="margin-bottom: 4px; color: #666; font-size: 0.9em;">Selected Vacations:</p>
+                  <div id="calendar-vacation-ranges" class="vacation-ranges-list" style="font-style: italic; color: #333;">None</div>
+              </div>
+          </div>
+          
+          <div class="modal__footer" style="margin-top: 20px; display: flex; justify-content: flex-end;">
+              <button id="btn-save-vacation" class="btn btn--primary">Set Vacation</button>
+          </div>
+      </div>
+  </div>
 `,
 };

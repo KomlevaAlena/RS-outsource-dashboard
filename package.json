@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev": "vite",
+    "dev": "cross-env CHOKIDAR_USEPOLLING=true vite",
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "vite build && gh-pages -d docs",
@@ -15,10 +15,10 @@
   },
   "homepage": "https://komlevaalena.github.io/RS-outsource-dashboard/",
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "gh-pages": "^6.0.0",
     "prettier": "2.8.8",
     "sass": "^1.69.0",
-    "sharp": "^0.34.4",
     "vite": "^4.5.3"
   },
   "dependencies": {
