@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import { resolve } from 'path'
 
 export default defineConfig({
-  base: '/Dashboard-app/',
+  base: '/RS-outsource-dashboard/',
   
   build: {
     outDir: 'docs',
