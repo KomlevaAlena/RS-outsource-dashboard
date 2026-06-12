@@ -6,7 +6,7 @@
 
 import { store } from './store.js';
 import { openVacationCalendar } from './vacation.js';
-import { calculateVacationFactor, calculateEffectiveCapacity } from './formulas.js';
+import { calculateVacationFactor, calculateEffectiveCapacity, calculateProjectFinance, calculateGlobalFinance } from './formulas.js';
 
 function handleDeleteProject(projectId, periodKey) { // --- ЛОГИКА УДАЛЕНИЯ ПРОЕКТОВ
     const isConfirmed = confirm('Are you sure you want to delete this project?'); // Спрашиваем подтверждение у пользователя
@@ -74,7 +74,11 @@ function updateEmployeeField(employeeId, field, newValue, periodKey) {
     }
 }
 
-function createProjectsTable(projects) { // 1. Функция для сборки таблицы проектов
+function createProjectsTable(data, periodKey) { // 1. Функция для сборки таблицы проектов
+    const projects = data.projects || [];
+    const assignments = data.assignments || [];
+    const employees = data.employees || [];
+
     if (projects.length === 0) {
         return '<p class="empty-state">There are no projects yet</p>';
     }
@@ -86,8 +90,10 @@ function createProjectsTable(projects) { // 1. Функция для сборк�
             <tr>
                 <th>Company</th>
                 <th>Project</th>
-                <th>Budget</th>
+                <th>Budget (Rev.)</th>
                 <th>Capacity</th>
+                <th>Expenses</th>
+                <th>Profit</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -95,14 +101,21 @@ function createProjectsTable(projects) { // 1. Функция для сборк�
     `;
 
     projects.forEach(function(project) {
+        // Вызываем нашу новую функцию расчетов для каждого проекта
+        const finance = calculateProjectFinance(project, assignments, employees, periodKey);
+        // Класс для подсветки прибыли: если меньше 0 — красный текст, если больше — зеленый
+        const profitClass = finance.profit < 0 ? 'text-danger' : 'text-success';
+
         html += `
             <tr>
                 <td>${project.companyName}</td>
                 <td>${project.projectName}</td>
-                <td>${project.budget} $</td>
+                <td>${project.budget.toLocaleString()} $</td>
                 <td class="clickable-capacity" data-id="${project.id}">
-                    <span class="capacity-link">${project.capacity || 0} p.</span>
+                    <span class="capacity-link">${finance.effectiveCapacity} / ${project.capacity} p.</span>
                 </td>
+                <td>${finance.expenses.toLocaleString()} $</td>
+                <td class="${profitClass}"><strong>${finance.profit.toLocaleString()} $</strong></td>
                 <td>
                     <button class="btn-assign" data-id="${project.id}">Assign</button>
                     <button class="btn-delete" data-id="${project.id}">Delete</button>
@@ -161,16 +174,14 @@ function createEmployeesTable(employees, periodKey) { // ТАБЛИЦА СОТР
     return html;
 }
 
-function createFinancialSummary(projects) {
+function createFinancialSummary(data, periodKey) {
+    const projects = data.projects || [];
+    const assignments = data.assignments || [];
+    const employees = data.employees || [];
     const totalProjects = projects.length;
 
-    let totalBudget = 0;
-    let totalCapacity = 0;
-
-    projects.forEach(function(project) {
-        totalBudget += project.budget;
-        totalCapacity += (project.capacity || 0);
-    });
+    // Вызываем глобальный расчет финансов по фирме
+    const globalFinance = calculateGlobalFinance(projects, assignments, employees, periodKey);
 
     let html = ` 
         <div class="fin-summary">
@@ -179,12 +190,16 @@ function createFinancialSummary(projects) {
                 <span class="fin-card__value">${totalProjects}</span>
             </div>
             <div class="fin-card">
-                <span class="fin-card__title">Total Budget</span>
-                <span class="fin-card__value">${totalBudget.toLocaleString()} $</span>
+                <span class="fin-card__title">Total Revenue</span>
+                <span class="fin-card__value">${globalFinance.totalBudget.toLocaleString()} $</span>
             </div>
             <div class="fin-card">
-                <span class="fin-card__title">Total Capacity</span>
-                <span class="fin-card__value">${totalCapacity} p.</span>
+                <span class="fin-card__title">Total Expenses</span>
+                <span class="fin-card__value">${globalFinance.totalExpenses.toLocaleString()} $</span>
+            </div>
+            <div class="fin-card">
+                <span class="fin-card__title">Total Profit</span>
+                <span class="fin-card__value">${globalFinance.totalProfit.toLocaleString()} $</span>
             </div>
         </div>
         `;
@@ -343,8 +358,8 @@ export function renderCurrentTab(tabName, periodKey) {
     const data = store.getMonthData(periodKey);
 
     if (tabName === 'projects') {
-        const summaryHtml = createFinancialSummary(data.projects);
-        const tableHtml = createProjectsTable(data.projects);
+        const summaryHtml = createFinancialSummary(data, periodKey);
+        const tableHtml = createProjectsTable(data, periodKey);
 
         container.innerHTML = summaryHtml + tableHtml;
         

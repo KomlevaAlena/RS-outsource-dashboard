@@ -84,3 +84,75 @@ export function calculateEffectiveCapacity(employee, periodKey) {
     const effectiveCapacity = 100 * (1 - vacationFactor);
     return Math.round(effectiveCapacity);
 }
+
+/**
+ * Расчет финансовых показателей для ОДНОГО конкретного проекта
+ * @param {Object} project - Объект проекта
+ * @param {Array} assignments - Все назначения сотрудников за текущий месяц
+ * @param {Array} employees - Все сотрудники за текущий месяц
+ * @param {string} periodKey - Ключ периода (например, "2026-05")
+ * @returns {Object} Объект с расчетами: { effectiveCapacity, expenses, revenue, profit }
+ */
+export function calculateProjectFinance(project, assignments, employees, periodKey) {
+    // 1. Фильтруем назначения: ищем только тех сотрудников, которые привязаны к ЭТОМУ проекту
+    const projectAssignments = assignments.filter(function(asm) {
+        return String(asm.projectId) === String(project.id);
+    });
+    let totalEffectiveCapacity = 0;
+    let totalExpenses = 0;
+    // 2. Бежим по каждому назначению на проект и считаем затраты
+    projectAssignments.forEach(function(asm) { // Находим полную информацию о сотруднике по его ID
+        const employee = employees.find(function(emp) {
+            return String(emp.id) === String(asm.employeeId);
+        });
+        // Если сотрудник найден, считаем его вклад в проект
+        if (employee) {
+            totalEffectiveCapacity += asm.capacity;// Прибавляем его проценты загрузки к общей мощности проекта
+            const vacationFactor = calculateVacationFactor(employee, periodKey); // Считаем коэффициент отпусков сотрудника за этот месяц
+            const employeeCost = employee.salary * (asm.capacity / 100) * (1 - vacationFactor); // Формула расхода на сотрудника: Зарплата * (Загрузка / 100) * (1 - Коэффициент отпусков)
+            totalExpenses += employeeCost;
+        }
+    });
+
+    // 3. Доход проекта — это его чистый бюджет
+    const revenue = project.budget;
+    // 4. Прибыль проекта — это Доход минус Расходы
+    const profit = revenue - totalExpenses;
+    // Возвращаем округленные до целого числа значения для красивого вывода
+    return {
+        effectiveCapacity: Math.round(totalEffectiveCapacity),
+        expenses: Math.round(totalExpenses),
+        revenue: Math.round(revenue),
+        profit: Math.round(profit)
+    };
+}
+
+/**
+ * Расчет ИТОГОВЫХ финансовых показателей по ВСЕМ проектам компании за месяц
+ * @param {Array} projects - Массив всех проектов месяца
+ * @param {Array} assignments - Массив всех назначений месяца
+ * @param {Array} employees - Массив всех сотрудников месяца
+ * @param {string} periodKey - Ключ периода
+ * @returns {Object} Глобальные итоги: { totalBudget, totalCapacity, totalExpenses, totalProfit }
+ */
+export function calculateGlobalFinance(project, assignments, employees, periodKey) {
+    let totalBudget = 0;
+    let totalCapacity = 0;
+    let totalExpenses = 0;
+    let totalProfit = 0;
+
+    project.forEach(function(project) { // Вызываем функцию расчета для каждого отдельного проекта
+        const projectFinance = calculateProjectFinance(project, assignments, employees, periodKey);
+        totalBudget += projectFinance.revenue;
+        totalCapacity += projectFinance.effectiveCapacity;
+        totalExpenses += projectFinance.expenses;
+        totalProfit += projectFinance.profit;
+    });
+
+    return {
+        totalBudget: totalBudget,
+        totalCapacity: totalCapacity,
+        totalExpenses: totalExpenses,
+        totalProfit: totalProfit
+    };
+}
