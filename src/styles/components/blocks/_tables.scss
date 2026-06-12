@@ -147,3 +147,12 @@
     color: var(--text-primary);
   }
 }
+
+th.sortable {
+    cursor: pointer;
+    user-select: none; // Чтобы текст не выделялся синим при частых кликах
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.05); // Легкий визуальный отклик
+    }
+}

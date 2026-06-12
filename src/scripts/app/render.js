@@ -8,6 +8,13 @@ import { store } from './store.js';
 import { openVacationCalendar } from './vacation.js';
 import { calculateVacationFactor, calculateEffectiveCapacity, calculateProjectFinance, calculateGlobalFinance } from './formulas.js';
 
+// Глобальное состояние сортировки для текущего сеанса отображения
+const currentSort = {
+    tab: null,       // 'projects' или 'employees'
+    field: null,     // имя поля, по которому сортируем
+    direction: 'asc' // 'asc' (по возрастанию) или 'desc' (по убыванию)
+};
+
 function handleDeleteProject(projectId, periodKey) { // --- ЛОГИКА УДАЛЕНИЯ ПРОЕКТОВ
     const isConfirmed = confirm('Are you sure you want to delete this project?'); // Спрашиваем подтверждение у пользователя
     if (!isConfirmed) return;
@@ -83,17 +90,50 @@ function createProjectsTable(data, periodKey) { // 1. Функция для сб
         return '<p class="empty-state">There are no projects yet</p>';
     }
 
-    // Начинаем собирать строку с заголовков таблицы
+    // ЛОГИКА СОРТИРОВКИ ПРОЕКТОВ
+    if (currentSort.tab === 'projects'  && currentSort.field) {
+        // Создаем копию массива, чтобы не мутировать исходные данные в Store
+        projects = [...projects].sort(function(a, b) {
+            let valA, valB;
+            // Если сортируем по расчетным финансовым полям, вычисляем их "на лету"
+            if (currentSort.field === 'expenses' || currentSort === 'profit' || currentSort.field === 'effectiveCapacity') {
+                const finA = calculateProjectFinance(a, assignments, employees, periodKey);
+                const finB = calculateProjectFinance(b, assignments, employees, periodKey);
+                valA = finA[currentSort.field];
+                valB = finB[currentSort.field]; 
+            } else {
+                // Иначе берем стандартные поля (companyName, projectName, budget)
+                valA = a[currentSort.field];
+                valB = b[currentSort.field];
+            }
+            // Логика сравнения для строк и чисел
+            if (typeof valA === 'string') {
+                return currentSort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            } else {
+                return currentSort.direction === 'asc' ? valA - valB : valB - valA;
+            }
+        });
+    }
+
+    // Вспомогательная функция для отрисовки стрелочек в шапке
+    function getArrow(field) {
+        if (currentSort.tab === 'projects' && currentSort.field === field) {
+            return currentSort.direction === 'asc' ? ' ↑' : ' ↓';
+        }
+        return '';
+    }
+
+    // Начинаем собирать строку с заголовков таблицы (добавили data-sort и класс sortable)
     let html = ` 
     <table class="table">
         <thead>
             <tr>
-                <th>Company</th>
-                <th>Project</th>
-                <th>Budget (Rev.)</th>
-                <th>Capacity</th>
-                <th>Expenses</th>
-                <th>Profit</th>
+                <th class="sortable" data-sort="companyName">Company${getArrow('companyName')}</th>
+                <th class="sortable" data-sort="projectName">Project${getArrow('projectName')}</th>
+                <th class="sortable" data-sort="budget">Budget (Rev.)${getArrow('budget')}</th>
+                <th class="sortable" data-sort="effectiveCapacity">Capacity${getArrow('effectiveCapacity')}</th>
+                <th class="sortable" data-sort="expenses">Expenses${getArrow('expenses')}</th>
+                <th class="sortable" data-sort="profit">Profit${getArrow('profit')}</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -133,24 +173,56 @@ function createEmployeesTable(employees, periodKey) { // ТАБЛИЦА СОТР
         return '<p class="empty-state">No employees added yet</p>';
     }
 
+    let displayedEmployees = employees;
+
+    // ЛОГИКА СОРТИРОВКИ СОТРУДНИКОВ
+    if (currentSort.tab === 'employees' && currentSort.field) {
+        displayedEmployees = [...employees].sort(function(a, b) {
+            let valA, valB;
+
+            if (currentSort.field === 'vacationFactor') {
+                valA = calculateVacationFactor(a, periodKey);
+                valB = calculateVacationFactor(b, periodKey);
+            } else if (currentSort.field === 'effectiveCapacity') {
+                valA = calculateEffectiveCapacity(a, periodKey);
+                valB = calculateEffectiveCapacity(b, periodKey);
+            } else {
+                valA = a[currentSort.field];
+                valB = b[currentSort.field];
+            }
+
+            if (typeof valA === 'string') {
+                return currentSort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            } else {
+                return currentSort.direction === 'asc' ? valA - valB : valB - valA;
+            }
+        });
+    }
+
+    function getArrow(field) {
+        if (currentSort.tab === 'employees' && currentSort.field === field) {
+            return currentSort.direction === 'asc' ? ' ↑' : ' ↓';
+        }
+        return '';
+    }
+
     let html = `
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
-                <th>Position</th>
-                <th>Age</th>
-                <th>Salary</th>
-                <th>Vacation Factor</th>
-                <th>Eff. Capacity</th>
+                <th class="sortable" data-sort="name">Name${getArrow('name')}</th>
+                <th class="sortable" data-sort="position">Position${getArrow('position')}</th>
+                <th class="sortable" data-sort="age">Age${getArrow('age')}</th>
+                <th class="sortable" data-sort="salary">Salary${getArrow('salary')}</th>
+                <th class="sortable" data-sort="vacationFactor">Vacation Factor${getArrow('vacationFactor')}</th>
+                <th class="sortable" data-sort="effectiveCapacity">Eff. Capacity${getArrow('effectiveCapacity')}</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
     `;
 
-    employees.forEach(function(emp) {
-        // Вызываем наши формулы для каждого сотрудника прямо внутри цикла:
+    displayedEmployees.forEach(function(emp) {
         const vacationFactor = calculateVacationFactor(emp, periodKey);
         const effectiveCapacity = calculateEffectiveCapacity(emp, periodKey);
 
@@ -365,6 +437,21 @@ export function renderCurrentTab(tabName, periodKey) {
         
         container.onclick = function(event) {
             console.log('Кликнули по элементу:', event.target);
+            
+            // --- ЛОГИКА КЛИКА ПО СОРТИРОВКЕ (ПРОЕКТЫ) ---
+            if (event.target.classList.contains('sortable')) {
+                const sortField = event.target.getAttribute('data-sort');
+                if (currentSort.tab === 'projects' && currentSort.field === sortField) {
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.tab = 'projects';
+                    currentSort.field = sortField;
+                    currentSort.direction = 'asc';
+                }
+                renderCurrentTab('projects', periodKey); // Перерисовываем с новой сортировкой
+                return;
+            }
+
             if (event.target.classList.contains('btn-delete')) {
                 const projectId = event.target.getAttribute('data-id');
                 handleDeleteProject(projectId, periodKey);
@@ -381,15 +468,27 @@ export function renderCurrentTab(tabName, periodKey) {
             }
         };
     } else if (tabName === 'employees') {
-        // Переписываем эту строчку: теперь передаем и сотрудников, и periodKey
         container.innerHTML = createEmployeesTable(data.employees, periodKey);
 
         container.onclick = function(event) {
+            
+            // --- ЛОГИКА КЛИКА ПО СОРТИРОВКЕ (СОТРУДНИКИ) ---
+            if (event.target.classList.contains('sortable')) {
+                const sortField = event.target.getAttribute('data-sort');
+                if (currentSort.tab === 'employees' && currentSort.field === sortField) {
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.tab = 'employees';
+                    currentSort.field = sortField;
+                    currentSort.direction = 'asc';
+                }
+                renderCurrentTab('employees', periodKey); // Перерисовываем с новой сортировкой
+                return;
+            }
 
             if (event.target.classList.contains('btn-availability')) { // Ловим клик по кнопке отпусков
                 const employeeId = event.target.getAttribute('data-id');
                 console.log(`📅 Нажали календарь сотрудника с ID: ${employeeId}`);
-                // вызов функции открытия календаря:
                 openVacationCalendar(employeeId, periodKey);
             }
 
