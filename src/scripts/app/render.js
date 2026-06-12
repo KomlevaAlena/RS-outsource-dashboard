@@ -6,6 +6,7 @@
 
 import { store } from './store.js';
 import { openVacationCalendar } from './vacation.js';
+import { calculateVacationFactor, calculateEffectiveCapacity } from './formulas.js';
 
 function handleDeleteProject(projectId, periodKey) { // --- ЛОГИКА УДАЛЕНИЯ ПРОЕКТОВ
     const isConfirmed = confirm('Are you sure you want to delete this project?'); // Спрашиваем подтверждение у пользователя
@@ -114,7 +115,7 @@ function createProjectsTable(projects) { // 1. Функция для сборк�
     return html;
 }
 
-function createEmployeesTable(employees) { // ТАБЛИЦА СОТРУДНИКОВ
+function createEmployeesTable(employees, periodKey) { // ТАБЛИЦА СОТРУДНИКОВ
     if (employees.length === 0) {
         return '<p class="empty-state">No employees added yet</p>';
     }
@@ -127,6 +128,8 @@ function createEmployeesTable(employees) { // ТАБЛИЦА СОТРУДНИК�
                 <th>Position</th>
                 <th>Age</th>
                 <th>Salary</th>
+                <th>Vacation Factor</th>
+                <th>Eff. Capacity</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -134,12 +137,18 @@ function createEmployeesTable(employees) { // ТАБЛИЦА СОТРУДНИК�
     `;
 
     employees.forEach(function(emp) {
+        // Вызываем наши формулы для каждого сотрудника прямо внутри цикла:
+        const vacationFactor = calculateVacationFactor(emp, periodKey);
+        const effectiveCapacity = calculateEffectiveCapacity(emp, periodKey);
+
         html += `
             <tr>
                 <td>${emp.name}</td>
                 <td class="editable" data-id="${emp.id}" data-field="position">${emp.position}</td>
                 <td>${emp.age} y.o.</td>
                 <td class="editable" data-id="${emp.id}" data-field="salary">${emp.salary} $</td>
+                <td><span class="badge badge--factor">${vacationFactor}</span></td>
+                <td><span class="badge badge--capacity">${effectiveCapacity}%</span></td>
                 <td>
                     <button class="btn-delete btn-delete--emp" data-id="${emp.id}">Delete</button>
                     <button class="btn-availability" data-id="${emp.id}">Availability</button>
@@ -357,7 +366,8 @@ export function renderCurrentTab(tabName, periodKey) {
             }
         };
     } else if (tabName === 'employees') {
-        container.innerHTML = createEmployeesTable(data.employees);
+        // Переписываем эту строчку: теперь передаем и сотрудников, и periodKey
+        container.innerHTML = createEmployeesTable(data.employees, periodKey);
 
         container.onclick = function(event) {
 
