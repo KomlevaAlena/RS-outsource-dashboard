@@ -15,6 +15,12 @@ const currentSort = {
     direction: 'asc' // 'asc' (по возрастанию) или 'desc' (по убыванию)
 };
 
+// Хранилище активных фильтров
+const currentFilters = {
+    projectSearch: '', // Строка поиска по названию проекта или компании
+    employeePosition: '' // Выбранная должность для фильтрации сотрудников
+};
+
 function handleDeleteProject(projectId, periodKey) { // --- ЛОГИКА УДАЛЕНИЯ ПРОЕКТОВ
     const isConfirmed = confirm('Are you sure you want to delete this project?'); // Спрашиваем подтверждение у пользователя
     if (!isConfirmed) return;
@@ -82,12 +88,21 @@ function updateEmployeeField(employeeId, field, newValue, periodKey) {
 }
 
 function createProjectsTable(data, periodKey) { // 1. Функция для сборки таблицы проектов
-    const projects = data.projects || [];
+    let projects = data.projects || [];
     const assignments = data.assignments || [];
     const employees = data.employees || [];
 
     if (projects.length === 0) {
         return '<p class="empty-state">There are no projects yet</p>';
+    }
+    // 1. ПРИМЕНЯЕМ ПОИСК/ФИЛЬТРАЦИЮ (Если пользователь что-то ввел)
+    if (currentFilters.projectSearch.trim() !== '') {
+        const query = currentFilters.projectSearch.toLowerCase().trim();
+        projects = projects.filter(function(project) {
+            const nameMatches = project.projectName ? project.projectName.toLowerCase().includes(query) : false;
+            const companyMatches = project.companyName ? project.companyName.toLowerCase().includes(query) : false;
+            return nameMatches || companyMatches; // Ищем и по проекту, и по компании
+        });
     }
 
     // ЛОГИКА СОРТИРОВКИ ПРОЕКТОВ
@@ -124,7 +139,22 @@ function createProjectsTable(data, periodKey) { // 1. Функция для сб
     }
 
     // Начинаем собирать строку с заголовков таблицы (добавили data-sort и класс sortable)
-    let html = ` 
+    let html = `
+    <div class="table-actions">
+        <input type="text" 
+               id="project-search-input" 
+               class="form__input form__input--search" 
+               placeholder="🔍 Search by project or company..." 
+               value="${currentFilters.projectSearch}">
+    </div>
+    `;
+
+    if (projects.length === 0) {
+        html += '<p class="empty-state">No matching projects found</p>';
+        return html;
+    }
+
+    html += ` 
     <table class="table">
         <thead>
             <tr>
@@ -435,10 +465,11 @@ export function renderCurrentTab(tabName, periodKey) {
 
         container.innerHTML = summaryHtml + tableHtml;
         
+        // --- ЕДИНЫЙ ОБРАБОТЧИК КЛИКОВ (ПРОЕКТЫ) ---
         container.onclick = function(event) {
             console.log('Кликнули по элементу:', event.target);
             
-            // --- ЛОГИКА КЛИКА ПО СОРТИРОВКЕ (ПРОЕКТЫ) ---
+            // 1. Клик по сортировке
             if (event.target.classList.contains('sortable')) {
                 const sortField = event.target.getAttribute('data-sort');
                 if (currentSort.tab === 'projects' && currentSort.field === sortField) {
@@ -448,31 +479,56 @@ export function renderCurrentTab(tabName, periodKey) {
                     currentSort.field = sortField;
                     currentSort.direction = 'asc';
                 }
-                renderCurrentTab('projects', periodKey); // Перерисовываем с новой сортировкой
+                renderCurrentTab('projects', periodKey);
                 return;
             }
 
+            // 2. Клик на удаление проекта
             if (event.target.classList.contains('btn-delete')) {
                 const projectId = event.target.getAttribute('data-id');
                 handleDeleteProject(projectId, periodKey);
             }
+
+            // 3. Клик на Assign
             if (event.target.classList.contains('btn-assign')) {
                 console.log('Ура, поймали клик по кнопке Assign!');
                 const projectId = event.target.getAttribute('data-id');
                 openAssignModal(projectId, periodKey);
             }
+
+            // 4. Клик на Capacity (Подробности команды)
             const capacityCell = event.target.closest('.clickable-capacity');
             if (capacityCell) {
                 const projectId = capacityCell.getAttribute('data-id');
                 openDetailsModal(projectId, periodKey);
             }
         };
+
+        // --- ЖИВОЙ ПОИСК ПРИ ВВОДЕ ТЕКСТА (ПРОЕКТЫ) ---
+        container.oninput = function(event) {
+            if (event.target.id === 'project-search-input') {
+                currentFilters.projectSearch = event.target.value; // Сохраняем текст в стейт
+                
+                // Перерисовываем содержимое
+                const summaryHtml = createFinancialSummary(data, periodKey);
+                const tableHtml = createProjectsTable(data, periodKey);
+                container.innerHTML = summaryHtml + tableHtml;
+
+                // Возвращаем фокус ввода в инпут
+                const input = document.getElementById('project-search-input');
+                if (input) {
+                    input.focus();
+                    input.setSelectionRange(input.value.length, input.value.length);
+                }
+            }
+        };
+
     } else if (tabName === 'employees') {
         container.innerHTML = createEmployeesTable(data.employees, periodKey);
 
+        // --- ОБРАБОТЧИК КЛИКОВ (СОТРУДНИКИ) ---
         container.onclick = function(event) {
-            
-            // --- ЛОГИКА КЛИКА ПО СОРТИРОВКЕ (СОТРУДНИКИ) ---
+            // 1. Клик по сортировке
             if (event.target.classList.contains('sortable')) {
                 const sortField = event.target.getAttribute('data-sort');
                 if (currentSort.tab === 'employees' && currentSort.field === sortField) {
@@ -482,22 +538,25 @@ export function renderCurrentTab(tabName, periodKey) {
                     currentSort.field = sortField;
                     currentSort.direction = 'asc';
                 }
-                renderCurrentTab('employees', periodKey); // Перерисовываем с новой сортировкой
+                renderCurrentTab('employees', periodKey);
                 return;
             }
 
-            if (event.target.classList.contains('btn-availability')) { // Ловим клик по кнопке отпусков
+            // 2. Клик по календарю отпусков
+            if (event.target.classList.contains('btn-availability')) {
                 const employeeId = event.target.getAttribute('data-id');
                 console.log(`📅 Нажали календарь сотрудника с ID: ${employeeId}`);
                 openVacationCalendar(employeeId, periodKey);
             }
 
-            if(event.target.classList.contains('btn-delete--emp')) { 
+            // 3. Клик по удалению сотрудника
+            if (event.target.classList.contains('btn-delete--emp')) {
                 const employeeId = event.target.getAttribute('data-id');
                 handleDeleteEmployee(employeeId, periodKey);
             }
         };
 
+        // --- ДАБЛКЛИК ДЛЯ РЕДАКТИРОВАНИЯ (СОТРУДНИКИ) ---
         container.ondblclick = function(event) {
             const cell = event.target;
             if (cell.classList.contains('editable') && !cell.querySelector('input')) {
