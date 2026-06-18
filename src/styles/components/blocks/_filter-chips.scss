@@ -1,0 +1,130 @@
+@use '../../variables';
+
+// Контейнер для чипсов над таблицей
+.filter-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: variables.$gap-sm;
+  margin-bottom: variables.$margin-bottom-filters;
+  min-height: 32px;
+}
+
+// Отдельный чипс фильтра
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 4px 8px;
+  border-radius: variables.$border-radius-sm;
+  font-size: variables.$font-size-xs;
+  color: var(--text-primary);
+  gap: 6px;
+
+  &__remove {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-weight: bold;
+    padding: 0 2px;
+    font-size: variables.$font-size-xs;
+
+    &:hover {
+      color: var(--danger-color);
+    }
+  }
+
+  // Спец-стиль для чипса "Clear All"
+  &--clear-all {
+    border: 1px dashed var(--danger-color);
+    color: var(--danger-color);
+    cursor: pointer;
+    background: transparent;
+
+    &:hover {
+      background-color: var(--danger-color);
+      color: white;
+    }
+  }
+}
+
+// Иконка лупы в заголовке th
+.filter-icon {
+  margin-left: 6px;
+  color: var(--text-secondary);
+  font-size: variables.$font-size-sm;
+  cursor: pointer;
+  display: inline-block;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--accent-color);
+  }
+}
+
+// Сделать заголовки th контекстом для абсолютного позиционирования поп-апа
+.table th {
+  position: relative;
+}
+
+// Сам всплывающий поп-ап фильтра
+.filter-popup {
+  position: absolute;
+  top: 100%;
+  left: 16px; // Выравнивание по паддингу th
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: variables.$border-radius-sm;
+  padding: 10px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 180px;
+  text-transform: none; // Чтобы UPPERCASE из thead не ломал текст внутри
+  font-weight: normal;
+
+  &__input, &__select {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--border-color);
+    border-radius: variables.$border-radius-sm;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: variables.$font-size-xs;
+
+    &:focus {
+      border-color: var(--accent-color);
+      outline: none;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  &__btn {
+    padding: 4px 8px;
+    font-size: variables.$font-size-xs;
+    border-radius: variables.$border-radius-sm;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-primary);
+
+    &--apply {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border-color: var(--text-primary);
+    }
+
+    &:hover {
+      opacity: 0.9;
+    }
+  }
+}

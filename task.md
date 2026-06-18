@@ -532,25 +532,5 @@ Grading Scale:
 140-159 pts (70-79%): Good - Most features working
 120-139 pts (60-69%): Satisfactory - Core features working
 Below 120 pts (<60%): Needs Improvement - Missing significant functionality
-Useful Resources & Links 📖
-JavaScript References
-MDN JavaScript Guide
-MDN Array Methods
-MDN Date
-MDN Set
-ES6 Modules
-DOM Manipulation
-MDN DOM Introduction
-Event Delegation
-Element.classList
-getBoundingClientRect
-localStorage
-MDN localStorage
-Working with localStorage
-Form Validation
-MDN Form Validation
-HTML5 Constraint Validation
-Git & GitHub
-Git Basics
-GitHub Pages Deployment
+
 Good luck with your implementation! Focus on getting the JavaScript logic correct - that's what we're evaluating. The styling is already provided in the demo.
