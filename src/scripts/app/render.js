@@ -203,11 +203,27 @@ function createEmployeesTable(employees, periodKey) { // ТАБЛИЦА СОТР
         return '<p class="empty-state">No employees added yet</p>';
     }
 
-    let displayedEmployees = employees;
+    let displayedEmployees = employees || [];
 
-    // ЛОГИКА СОРТИРОВКИ СОТРУДНИКОВ
+    // 1. СОБИРАЕМ ВСЕ УНИКАЛЬНЫЕ ДОЛЖНОСТИ ДЛЯ СЕЛЕКТА
+    const allPositions = [];
+    displayedEmployees.forEach(function(emp) {
+        if (emp.position && !allPositions.includes(emp.position)) {
+            allPositions.push(emp.position);
+        }
+    });
+    allPositions.sort(); // Сортируем должности по алфавиту
+
+    // 2. ПРИМЕНЯЕМ ФИЛЬТРАЦИЮ ПО ДОЛЖНОСТИ
+    if (currentFilters.employeePosition && currentFilters.employeePosition !== '') {
+        displayedEmployees = displayedEmployees.filter(function(emp) {
+            return emp.position === currentFilters.employeePosition;
+        });
+    }
+
+    // 3. ЛОГИКА СОРТИРОВКИ СОТРУДНИКОВ
     if (currentSort.tab === 'employees' && currentSort.field) {
-        displayedEmployees = [...employees].sort(function(a, b) {
+        displayedEmployees = [...displayedEmployees].sort(function(a, b) {
             let valA, valB;
 
             if (currentSort.field === 'vacationFactor') {
@@ -236,7 +252,30 @@ function createEmployeesTable(employees, periodKey) { // ТАБЛИЦА СОТР
         return '';
     }
 
+    // 4. ГЕНЕРИРУЕМ HTML СЕЛЕКТА ФИЛЬТРАЦИИ
+    let optionsHtml = `<option value="">All Positions</option>`;
+    allPositions.forEach(function(pos) {
+        const selected = currentFilters.employeePosition === pos ? 'selected' : '';
+        optionsHtml += `<option value="${pos}" ${selected}>${pos}</option>`;
+    });
+
+    // Создаем базовый HTML и СРАЗУ вставляем туда селект
     let html = `
+    <div class="table-actions">
+        <select id="employee-position-filter" class="select select--filter" style="max-width: 250px; margin-bottom: 15px; padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc;">
+            ${optionsHtml}
+        </select>
+    </div>
+    `;
+
+    // Если после фильтрации никого не осталось
+    if (displayedEmployees.length === 0) {
+        html += '<p class="empty-state">No employees found for this position</p>';
+        return html;
+    }
+
+    // Добавляем саму таблицу
+    html += `
     <table class="table">
         <thead>
             <tr>
@@ -553,6 +592,14 @@ export function renderCurrentTab(tabName, periodKey) {
             if (event.target.classList.contains('btn-delete--emp')) {
                 const employeeId = event.target.getAttribute('data-id');
                 handleDeleteEmployee(employeeId, periodKey);
+            }
+        };
+
+        // --- 2. ФИЛЬТРАЦИЯ СОТРУДНИКОВ ПО ДОЛЖНОСТИ (ВСТАВИЛИ СЮДА!) ---
+        container.onchange = function(event) {
+            if (event.target.id === 'employee-position-filter') {
+                currentFilters.employeePosition = event.target.value; // Записываем выбранную должность в стейт
+                renderCurrentTab('employees', periodKey); // Перерисовываем вкладку, чтобы применился фильтр
             }
         };
 
