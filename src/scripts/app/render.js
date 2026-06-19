@@ -15,58 +15,36 @@ const currentSort = {
     direction: 'asc' // 'asc' (по возрастанию) или 'desc' (по убыванию)
 };
 
-// let currentFilters = {
-//     projects: {
-//         companyName: '',
-//         projectName: ''
-//     },
-//     employees: {
-//         name: '',
-//         surname: '',
-//         position: ''
-//     }
-// };
-
-// // Хранилище активных фильтров
-// const currentFilters = {
-//     projectSearch: '', // Строка поиска по названию проекта или компании
-//     employeePosition: '' // Выбранная должность для фильтрации сотрудников
-// };
-
 // ✅ ОДИН ОБЪЕКТ ДЛЯ ВСЕХ ФИЛЬТРОВ (Объединенный)
 let currentFilters = {
-    // Для новой системы поп-апов (Проекты)
     projects: {
         companyName: '',
         projectName: ''
     },
-    // Для сотрудников (сохраняем структуру, чтобы ничего не упало)
     employees: {
         name: '',
         surname: '',
         position: ''
     },
-    // Оставляем это свойство как мостик, пока не перевели сотрудников на поп-апы
     employeePosition: '' 
 };
 
 function handleDeleteProject(projectId, periodKey) { // --- ЛОГИКА УДАЛЕНИЯ ПРОЕКТОВ
-    const isConfirmed = confirm('Are you sure you want to delete this project?'); // Спрашиваем подтверждение у пользователя
+    const isConfirmed = confirm('Are you sure you want to delete this project?');
     if (!isConfirmed) return;
 
-    const monthData = store.getMonthData(periodKey); // 1. Берем данные за этот месяц из Стора
-
-    const updatedProjects = monthData.projects.filter(function(project){ // 2. Фильтруем массив проектов
+    const monthData = store.getMonthData(periodKey);
+    const updatedProjects = monthData.projects.filter(function(project){
         return project.id !== projectId;
     });
 
-    monthData.projects = updatedProjects; // 3. Записываем обновленный массив обратно
+    monthData.projects = updatedProjects;
 
     const allData = store.getRawData();
     allData[periodKey] = monthData;
     store.saveData(allData);
     console.log(`❌ Проект с ID ${projectId} успешно удален`);
-    renderCurrentTab('projects', periodKey); // 5. Перерисовываем таблицу
+    renderCurrentTab('projects', periodKey);
 }
 
 function handleDeleteEmployee(employeeId, periodKey) {
@@ -74,30 +52,27 @@ function handleDeleteEmployee(employeeId, periodKey) {
     if (!isConfirmed) return;
 
     const monthData = store.getMonthData(periodKey);
-    // Фильтруем массив сотрудников, удаляя нужного по ID
     monthData.employees = monthData.employees.filter(function(emp) {
         return emp.id !== employeeId;
-    })
+    });
 
     const allData = store.getRawData();
     allData[periodKey] = monthData;
     store.saveData(allData);
     console.log(`❌ Сотрудник с ID ${employeeId} удален`);
-    // Перерисовываем вкладку сотрудников
     renderCurrentTab('employees', periodKey);
 }
 
 function updateEmployeeField(employeeId, field, newValue, periodKey) {
     const monthData = store.getMonthData(periodKey);
-    const employee = monthData.employees.find(emp => emp.id === employeeId); // Находим нужного сотрудника
+    const employee = monthData.employees.find(emp => emp.id === employeeId);
 
     if (employee) {
-        // Если правим зарплату — переводим в число, если должность — оставляем строкой
         if (field === 'salary') {
             const numValue = Number(newValue);
             if (isNaN(numValue) || numValue <= 0) {
                 alert('Please enter the correct salary amount');
-                renderCurrentTab('employees', periodKey); // Сбрасываем изменения
+                renderCurrentTab('employees', periodKey);
                 return;
             }
             employee[field] = numValue;
@@ -109,30 +84,45 @@ function updateEmployeeField(employeeId, field, newValue, periodKey) {
             }
             employee[field] = newValue.trim();
         }
-        const allData = store.getRawData();// Сохраняем в Стор
+        const allData = store.getRawData();
         allData[periodKey] = monthData;
         store.saveData(allData);
         console.log(`📝 Сотрудник ${employeeId}: поле ${field} обновлено на ${newValue}`);
     }
 }
 
-function createProjectsTable(data, periodKey) { // 1. Функция для сборки таблицы проектов
+function createFilterChipsHtml(tab) {
+    const filters = currentFilters[tab];
+    let chipsHtml = '';
+    let activeCount = 0;
+    
+    for (const key in filters) {
+        if (filters[key] && filters[key].trim() !== '') {
+            activeCount++;
+            const readableLabel = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+
+            chipsHtml += `
+                <div class="filter-chip">
+                    <span>${readableLabel}: <strong>${filters[key]}</strong></span>
+                    <button class="filter-chip__remove" data-filter-tab="${tab}" data-filter-key="${key}">×</button>
+                </div>
+            `;
+        }
+    }
+    if (activeCount >= 2) {
+        chipsHtml += `
+            <div class="filter-chip filter-chip--clear-all" data-filter-clear-tab="${tab}">
+                Clear Filters
+            </div>
+        `;
+    }
+    return `<div class="filter-chips-container">${chipsHtml}</div>`;
+}
+
+function createProjectsTable(data, periodKey) { 
     let projects = data.projects || [];
     const assignments = data.assignments || [];
     const employees = data.employees || [];
-
-    if (projects.length === 0) {
-        return '<p class="empty-state">There are no projects yet</p>';
-    }
-    // // 1. ПРИМЕНЯЕМ ПОИСК/ФИЛЬТРАЦИЮ (Если пользователь что-то ввел)
-    // if (currentFilters.projectSearch.trim() !== '') {
-    //     const query = currentFilters.projectSearch.toLowerCase().trim();
-    //     projects = projects.filter(function(project) {
-    //         const nameMatches = project.projectName ? project.projectName.toLowerCase().includes(query) : false;
-    //         const companyMatches = project.companyName ? project.companyName.toLowerCase().includes(query) : false;
-    //         return nameMatches || companyMatches; // Ищем и по проекту, и по компании
-    //     });
-    // }
 
     // 1. ФИЛЬТРАЦИЯ МАССИВА ПРОЕКТОВ ПО СТЕЙТУ currentFilters
     if (currentFilters.projects.companyName && currentFilters.projects.companyName.trim() !== '') {
@@ -146,21 +136,17 @@ function createProjectsTable(data, periodKey) { // 1. Функция для сб
 
     // ЛОГИКА СОРТИРОВКИ ПРОЕКТОВ
     if (currentSort.tab === 'projects'  && currentSort.field) {
-        // Создаем копию массива, чтобы не мутировать исходные данные в Store
         projects = [...projects].sort(function(a, b) {
             let valA, valB;
-            // Если сортируем по расчетным финансовым полям, вычисляем их "на лету"
-            if (currentSort.field === 'expenses' || currentSort === 'profit' || currentSort.field === 'effectiveCapacity') {
+            if (currentSort.field === 'expenses' || currentSort.field === 'profit' || currentSort.field === 'effectiveCapacity') {
                 const finA = calculateProjectFinance(a, assignments, employees, periodKey);
                 const finB = calculateProjectFinance(b, assignments, employees, periodKey);
                 valA = finA[currentSort.field];
                 valB = finB[currentSort.field]; 
             } else {
-                // Иначе берем стандартные поля (companyName, projectName, budget)
                 valA = a[currentSort.field];
                 valB = b[currentSort.field];
             }
-            // Логика сравнения для строк и чисел
             if (typeof valA === 'string') {
                 return currentSort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
             } else {
@@ -169,7 +155,6 @@ function createProjectsTable(data, periodKey) { // 1. Функция для сб
         });
     }
 
-    // Вспомогательная функция для отрисовки стрелочек в шапке
     function getArrow(field) {
         if (currentSort.tab === 'projects' && currentSort.field === field) {
             return currentSort.direction === 'asc' ? ' ↑' : ' ↓';
@@ -177,16 +162,8 @@ function createProjectsTable(data, periodKey) { // 1. Функция для сб
         return '';
     }
 
-    // Начинаем собирать строку с заголовков таблицы (добавили data-sort и класс sortable)
-    let html = `
-    <div class="table-actions">
-        <input type="text" 
-               id="project-search-input" 
-               class="form__input form__input--search" 
-               placeholder="🔍 Search by project or company..." 
-               value="${currentFilters.projectSearch}">
-    </div>
-    `;
+    // 2. ГЕНЕРИРУЕМ ЧИПСЫ НАД ТАБЛИЦЕЙ СРАЗУ (Вместо старого инпута)
+    let html = createFilterChipsHtml('projects');
 
     if (projects.length === 0) {
         html += '<p class="empty-state">No matching projects found</p>';
@@ -197,8 +174,14 @@ function createProjectsTable(data, periodKey) { // 1. Функция для сб
     <table class="table">
         <thead>
             <tr>
-                <th class="sortable" data-sort="companyName">Company${getArrow('companyName')}</th>
-                <th class="sortable" data-sort="projectName">Project${getArrow('projectName')}</th>
+                <th class="sortable" data-sort="companyName">
+                    Company${getArrow('companyName')}
+                    <span class="filter-icon" data-filter-field="companyName">⌕</span>
+                </th>
+                <th class="sortable" data-sort="projectName">
+                    Project${getArrow('projectName')}
+                    <span class="filter-icon" data-filter-field="projectName">⌕</span>
+                </th>
                 <th class="sortable" data-sort="budget">Budget (Rev.)${getArrow('budget')}</th>
                 <th class="sortable" data-sort="effectiveCapacity">Capacity${getArrow('effectiveCapacity')}</th>
                 <th class="sortable" data-sort="expenses">Expenses${getArrow('expenses')}</th>
@@ -210,9 +193,7 @@ function createProjectsTable(data, periodKey) { // 1. Функция для сб
     `;
 
     projects.forEach(function(project) {
-        // Вызываем нашу новую функцию расчетов для каждого проекта
         const finance = calculateProjectFinance(project, assignments, employees, periodKey);
-        // Класс для подсветки прибыли: если меньше 0 — красный текст, если больше — зеленый
         const profitClass = finance.profit < 0 ? 'text-danger' : 'text-success';
 
         html += `
@@ -237,60 +218,27 @@ function createProjectsTable(data, periodKey) { // 1. Функция для сб
     return html;
 }
 
-function createFilterChipsHtml(tab) {
-    const filters = currentFilters[tab];
-    let chipsHtml = '';
-    let activeCount = 0;
-    // Перебираем все ключи фильтров для данного таба
-    for (const key in filters) {
-        if (filters[key] && filters[key].trim() !== '') {
-            activeCount++;
-            // Превращаем camelCase в красивое имя (например, companyName -> Company Name)
-            const readableLabel = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-
-            chipsHtml += `
-                <div class="filter-chip">
-                    <span>${readableLabel}: <strong>${filters[key]}</strong></span>
-                    <button class="filter-chip__remove" data-filter-tab="${tab}" data-filter-key="${key}">×</button>
-                </div>
-            `;
-        }
-    }
-    // Если активных фильтров 2 или больше, ТЗ требует чипс "Clear Filters"
-    if (activeCount >= 2) {
-        chipsHtml += `
-            <div class="filter-chip filter-chip--clear-all" data-filter-clear-tab="${tab}">
-                Clear Filters
-            </div>
-        `;
-    }
-    return `<div class="filter-chips-container">${chipsHtml}</div>`;
-}
-
-function createEmployeesTable(employees, periodKey) { // ТАБЛИЦА СОТРУДНИКОВ
+function createEmployeesTable(employees, periodKey) {
     if (employees.length === 0) {
         return '<p class="empty-state">No employees added yet</p>';
     }
 
     let displayedEmployees = employees || [];
 
-    // 1. СОБИРАЕМ ВСЕ УНИКАЛЬНЫЕ ДОЛЖНОСТИ ДЛЯ СЕЛЕКТА
     const allPositions = [];
     displayedEmployees.forEach(function(emp) {
         if (emp.position && !allPositions.includes(emp.position)) {
             allPositions.push(emp.position);
         }
     });
-    allPositions.sort(); // Сортируем должности по алфавиту
+    allPositions.sort();
 
-    // 2. ПРИМЕНЯЕМ ФИЛЬТРАЦИЮ ПО ДОЛЖНОСТИ
     if (currentFilters.employeePosition && currentFilters.employeePosition !== '') {
         displayedEmployees = displayedEmployees.filter(function(emp) {
             return emp.position === currentFilters.employeePosition;
         });
     }
 
-    // 3. ЛОГИКА СОРТИРОВКИ СОТРУДНИКОВ
     if (currentSort.tab === 'employees' && currentSort.field) {
         displayedEmployees = [...displayedEmployees].sort(function(a, b) {
             let valA, valB;
@@ -321,14 +269,12 @@ function createEmployeesTable(employees, periodKey) { // ТАБЛИЦА СОТР
         return '';
     }
 
-    // 4. ГЕНЕРИРУЕМ HTML СЕЛЕКТА ФИЛЬТРАЦИИ
     let optionsHtml = `<option value="">All Positions</option>`;
     allPositions.forEach(function(pos) {
         const selected = currentFilters.employeePosition === pos ? 'selected' : '';
         optionsHtml += `<option value="${pos}" ${selected}>${pos}</option>`;
     });
 
-    // Создаем базовый HTML и СРАЗУ вставляем туда селект
     let html = `
     <div class="table-actions">
         <select id="employee-position-filter" class="select select--filter" style="max-width: 250px; margin-bottom: 15px; padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc;">
@@ -337,13 +283,11 @@ function createEmployeesTable(employees, periodKey) { // ТАБЛИЦА СОТР
     </div>
     `;
 
-    // Если после фильтрации никого не осталось
     if (displayedEmployees.length === 0) {
         html += '<p class="empty-state">No employees found for this position</p>';
         return html;
     }
 
-    // Добавляем саму таблицу
     html += `
     <table class="table">
         <thead>
@@ -390,10 +334,9 @@ function createFinancialSummary(data, periodKey) {
     const employees = data.employees || [];
     const totalProjects = projects.length;
 
-    // Вызываем глобальный расчет финансов по фирме
     const globalFinance = calculateGlobalFinance(projects, assignments, employees, periodKey);
 
-    let html = ` 
+    return ` 
         <div class="fin-summary">
             <div class="fin-card">
                 <span class="fin-card__title">Active Projects</span>
@@ -412,14 +355,10 @@ function createFinancialSummary(data, periodKey) {
                 <span class="fin-card__value">${globalFinance.totalProfit.toLocaleString()} $</span>
             </div>
         </div>
-        `;
-
-    return html;
+    `;
 }
 
-function openDetailsModal(projectId, periodKey) { // Функция открытия поп-апа со списком назначенных сотрудников
-    console.log('📖 ЧИТАЕМ НАЗНАЧЕНИЯ. Ключ периода:', periodKey);
-
+function openDetailsModal(projectId, periodKey) {
     const modal = document.getElementById('details-modal');
     const modalBody = document.getElementById('details-modal-body');
     const modalTitle = document.getElementById('details-modal-title');
@@ -435,12 +374,6 @@ function openDetailsModal(projectId, periodKey) { // Функция открыт
     const employees = monthData.employees || [];
     const assignments = monthData.assignments || [];
 
-    console.log('Проверяем, что пришло из базы для проекта:', {
-        projectId: projectId,
-        allAssignmentsInMonth: assignments,
-        filtered: assignments.filter(asm => asm.projectId === projectId)
-    });
-
     const currentProject = projects.find(p => p.id === projectId);
     if (currentProject) {
         modalTitle.textContent = `Team for "${currentProject.projectName}"`;
@@ -453,7 +386,6 @@ function openDetailsModal(projectId, periodKey) { // Функция открыт
     } else {
         let listHtml = '<ul class="team-list">';
         
-        //Сразу собираем разметку с кнопками удаления
         projectAssignments.forEach(function(asm) {
             const employee = employees.find(emp => String(emp.id) === String(asm.employeeId));
             if (employee) {
@@ -479,10 +411,7 @@ function openDetailsModal(projectId, periodKey) { // Функция открыт
         modalBody.innerHTML = listHtml;
     }
 
-    // ЛОГИКА УДАЛЕНИЯ С ПРОЕКТА (Вынесена наружу, работает по всей области модалки)
-    // ЕДИНЫЙ СЛУШАТЕЛЬ КЛИКОВ ДЛЯ МОДАЛКИ ПОДРОБНОСТЕЙ
     modal.onclick = function(event) {
-        // 1. ЛОГИКА УДАЛЕНИЯ СОТРУДНИКА С ПРОЕКТА
         if (event.target.classList.contains('btn-remove-asm')) {
             const pId = event.target.getAttribute('data-project-id');
             const eId = event.target.getAttribute('data-employee-id');
@@ -498,21 +427,16 @@ function openDetailsModal(projectId, periodKey) { // Функция открыт
             });
 
             store.saveData(currentData);
-            console.log(`🗑 Сотрудник ${eId} удален с проекта ${pId}`);
-
             openDetailsModal(pId, periodKey);
             renderCurrentTab('projects', periodKey);
-            return; // Выходим из функции, чтобы не срабатывали проверки ниже
+            return;
         }
 
-        // 2. ЛОГИКА ЗАКРЫТИЯ ОКНА (Клик на темный фон ИЛИ на крестик в углу)
         if (event.target.id === 'details-modal-overlay' || event.target.id === 'details-modal-close') {
-            console.log('🔒 Закрываем окно подробностей команды');
             modal.classList.remove('modal--open');
         }
     };
 
-    // Открываем модалку!
     modal.classList.add('modal--open');
 }
  
@@ -521,33 +445,22 @@ function openAssignModal(projectId, periodKey) {
     const projectInput = document.getElementById('assign-project-id');
     const empSelect = document.getElementById('assign-emp-select');
 
-    console.log('Поиск элементов модалки:', { modal, projectInput, empSelect });
-
-    if (!modal || !empSelect) {
-        console.error('❌ Ошибка: Элементы модального окна не найдены в HTML!');
-        return;
-    }
+    if (!modal || !empSelect) return;
     
-    if (projectInput) {
-        projectInput.value = projectId;
-    }
+    if (projectInput) projectInput.value = projectId;
     
     const monthData = store.getMonthData(periodKey);
     const employees = (monthData && monthData.employees) ? monthData.employees : [];
-
-    console.log('Список сотрудников для модалки:', employees);
     
     if (employees.length === 0) {
         empSelect.innerHTML = '<option value="">-- No employees available --</option>';
     } else {
         let optionsHtml = '<option value="">-- Select an employee --</option>';
-        
         employees.forEach(function(emp) {
             const name = emp.name || 'Unknown Name';
             const position = emp.position || 'No Position';
             optionsHtml += `<option value="${emp.id}">${name} (${position})</option>`;
         });
-        
         empSelect.innerHTML = optionsHtml;
     }
     
@@ -557,10 +470,8 @@ function openAssignModal(projectId, periodKey) {
     if (rangeValue) rangeValue.textContent = '50';
     
     modal.classList.add('modal--open');
-    console.log('🚀 Класс modal--open успешно добавлен!');
 }
 
-// 2. Главная функция, которую мы будем вызывать извне
 export function renderCurrentTab(tabName, periodKey) {
     const container = document.getElementById('table-container');
     if (!container) return;
@@ -573,11 +484,7 @@ export function renderCurrentTab(tabName, periodKey) {
 
         container.innerHTML = summaryHtml + tableHtml;
         
-        // --- ЕДИНЫЙ ОБРАБОТЧИК КЛИКОВ (ПРОЕКТЫ) ---
         container.onclick = function(event) {
-            console.log('Кликнули по элементу:', event.target);
-            
-            // 1. Клик по сортировке
             if (event.target.classList.contains('sortable')) {
                 const sortField = event.target.getAttribute('data-sort');
                 if (currentSort.tab === 'projects' && currentSort.field === sortField) {
@@ -591,20 +498,77 @@ export function renderCurrentTab(tabName, periodKey) {
                 return;
             }
 
-            // 2. Клик на удаление проекта
+            if (event.target.classList.contains('filter-icon')) {
+                event.stopPropagation();
+                
+                const oldPopup = document.querySelector('.filter-popup');
+                if (oldPopup) oldPopup.remove();
+
+                const field = event.target.getAttribute('data-filter-field');
+                const th = event.target.closest('th');
+                
+                const popup = document.createElement('div');
+                popup.className = 'filter-popup';
+                popup.innerHTML = `
+                    <input type="text" id="filter-popup-input" class="filter-popup__input" placeholder="Search..." value="${currentFilters.projects[field]}">
+                    <div class="filter-popup__actions">
+                        <button class="filter-popup__btn" id="filter-btn-cancel">Cancel</button>
+                        <button class="filter-popup__btn filter-popup__btn--apply" id="filter-btn-apply" data-field="${field}">Apply</button>
+                    </div>
+                `;
+                th.appendChild(popup);
+                
+                const input = popup.querySelector('#filter-popup-input');
+                input.focus();
+                input.onkeydown = function(e) {
+                    if (e.key === 'Enter') popup.querySelector('#filter-btn-apply').click();
+                };
+                return;
+            }
+
+            if (event.target.id === 'filter-btn-apply') {
+                const field = event.target.getAttribute('data-field');
+                const val = document.getElementById('filter-popup-input').value;
+                currentFilters.projects[field] = val;
+                renderCurrentTab('projects', periodKey);
+                return;
+            }
+
+            if (event.target.id === 'filter-btn-cancel') {
+                const popup = event.target.closest('.filter-popup');
+                if (popup) popup.remove();
+                return;
+            }
+
+            if (event.target.classList.contains('filter-chip__remove')) {
+                const key = event.target.getAttribute('data-filter-key');
+                currentFilters.projects[key] = '';
+                renderCurrentTab('projects', periodKey);
+                return;
+            }
+
+            if (event.target.classList.contains('filter-chip--clear-all')) {
+                currentFilters.projects.companyName = '';
+                currentFilters.projects.projectName = '';
+                renderCurrentTab('projects', periodKey);
+                return;
+            }
+
+            const openPopup = document.querySelector('.filter-popup');
+            if (openPopup && !event.target.closest('.filter-popup')) {
+                openPopup.remove();
+            }
+
             if (event.target.classList.contains('btn-delete')) {
                 const projectId = event.target.getAttribute('data-id');
                 handleDeleteProject(projectId, periodKey);
             }
 
-            // 3. Клик на Assign
             if (event.target.classList.contains('btn-assign')) {
-                console.log('Ура, поймали клик по кнопке Assign!');
                 const projectId = event.target.getAttribute('data-id');
                 openAssignModal(projectId, periodKey);
             }
 
-            // 4. Клик на Capacity (Подробности команды)
             const capacityCell = event.target.closest('.clickable-capacity');
             if (capacityCell) {
                 const projectId = capacityCell.getAttribute('data-id');
@@ -612,31 +576,10 @@ export function renderCurrentTab(tabName, periodKey) {
             }
         };
 
-        // --- ЖИВОЙ ПОИСК ПРИ ВВОДЕ ТЕКСТА (ПРОЕКТЫ) ---
-        container.oninput = function(event) {
-            if (event.target.id === 'project-search-input') {
-                currentFilters.projectSearch = event.target.value; // Сохраняем текст в стейт
-                
-                // Перерисовываем содержимое
-                const summaryHtml = createFinancialSummary(data, periodKey);
-                const tableHtml = createProjectsTable(data, periodKey);
-                container.innerHTML = summaryHtml + tableHtml;
-
-                // Возвращаем фокус ввода в инпут
-                const input = document.getElementById('project-search-input');
-                if (input) {
-                    input.focus();
-                    input.setSelectionRange(input.value.length, input.value.length);
-                }
-            }
-        };
-
     } else if (tabName === 'employees') {
         container.innerHTML = createEmployeesTable(data.employees, periodKey);
 
-        // --- ОБРАБОТЧИК КЛИКОВ (СОТРУДНИКИ) ---
         container.onclick = function(event) {
-            // 1. Клик по сортировке
             if (event.target.classList.contains('sortable')) {
                 const sortField = event.target.getAttribute('data-sort');
                 if (currentSort.tab === 'employees' && currentSort.field === sortField) {
@@ -650,29 +593,24 @@ export function renderCurrentTab(tabName, periodKey) {
                 return;
             }
 
-            // 2. Клик по календарю отпусков
             if (event.target.classList.contains('btn-availability')) {
                 const employeeId = event.target.getAttribute('data-id');
-                console.log(`📅 Нажали календарь сотрудника с ID: ${employeeId}`);
                 openVacationCalendar(employeeId, periodKey);
             }
 
-            // 3. Клик по удалению сотрудника
             if (event.target.classList.contains('btn-delete--emp')) {
                 const employeeId = event.target.getAttribute('data-id');
                 handleDeleteEmployee(employeeId, periodKey);
             }
         };
 
-        // --- 2. ФИЛЬТРАЦИЯ СОТРУДНИКОВ ПО ДОЛЖНОСТИ (ВСТАВИЛИ СЮДА!) ---
         container.onchange = function(event) {
             if (event.target.id === 'employee-position-filter') {
-                currentFilters.employeePosition = event.target.value; // Записываем выбранную должность в стейт
-                renderCurrentTab('employees', periodKey); // Перерисовываем вкладку, чтобы применился фильтр
+                currentFilters.employeePosition = event.target.value;
+                renderCurrentTab('employees', periodKey);
             }
         };
 
-        // --- ДАБЛКЛИК ДЛЯ РЕДАКТИРОВАНИЯ (СОТРУДНИКИ) ---
         container.ondblclick = function(event) {
             const cell = event.target;
             if (cell.classList.contains('editable') && !cell.querySelector('input')) {
@@ -696,9 +634,7 @@ export function renderCurrentTab(tabName, periodKey) {
                 }
                 
                 input.onkeydown = function(e) {
-                    if (e.key === 'Enter') {
-                        finishEditing();
-                    }
+                    if (e.key === 'Enter') finishEditing();
                 };
                 input.onblur = function() {
                     finishEditing();
