@@ -15,10 +15,39 @@ const currentSort = {
     direction: 'asc' // 'asc' (по возрастанию) или 'desc' (по убыванию)
 };
 
-// Хранилище активных фильтров
-const currentFilters = {
-    projectSearch: '', // Строка поиска по названию проекта или компании
-    employeePosition: '' // Выбранная должность для фильтрации сотрудников
+// let currentFilters = {
+//     projects: {
+//         companyName: '',
+//         projectName: ''
+//     },
+//     employees: {
+//         name: '',
+//         surname: '',
+//         position: ''
+//     }
+// };
+
+// // Хранилище активных фильтров
+// const currentFilters = {
+//     projectSearch: '', // Строка поиска по названию проекта или компании
+//     employeePosition: '' // Выбранная должность для фильтрации сотрудников
+// };
+
+// ✅ ОДИН ОБЪЕКТ ДЛЯ ВСЕХ ФИЛЬТРОВ (Объединенный)
+let currentFilters = {
+    // Для новой системы поп-апов (Проекты)
+    projects: {
+        companyName: '',
+        projectName: ''
+    },
+    // Для сотрудников (сохраняем структуру, чтобы ничего не упало)
+    employees: {
+        name: '',
+        surname: '',
+        position: ''
+    },
+    // Оставляем это свойство как мостик, пока не перевели сотрудников на поп-апы
+    employeePosition: '' 
 };
 
 function handleDeleteProject(projectId, periodKey) { // --- ЛОГИКА УДАЛЕНИЯ ПРОЕКТОВ
@@ -95,14 +124,24 @@ function createProjectsTable(data, periodKey) { // 1. Функция для сб
     if (projects.length === 0) {
         return '<p class="empty-state">There are no projects yet</p>';
     }
-    // 1. ПРИМЕНЯЕМ ПОИСК/ФИЛЬТРАЦИЮ (Если пользователь что-то ввел)
-    if (currentFilters.projectSearch.trim() !== '') {
-        const query = currentFilters.projectSearch.toLowerCase().trim();
-        projects = projects.filter(function(project) {
-            const nameMatches = project.projectName ? project.projectName.toLowerCase().includes(query) : false;
-            const companyMatches = project.companyName ? project.companyName.toLowerCase().includes(query) : false;
-            return nameMatches || companyMatches; // Ищем и по проекту, и по компании
-        });
+    // // 1. ПРИМЕНЯЕМ ПОИСК/ФИЛЬТРАЦИЮ (Если пользователь что-то ввел)
+    // if (currentFilters.projectSearch.trim() !== '') {
+    //     const query = currentFilters.projectSearch.toLowerCase().trim();
+    //     projects = projects.filter(function(project) {
+    //         const nameMatches = project.projectName ? project.projectName.toLowerCase().includes(query) : false;
+    //         const companyMatches = project.companyName ? project.companyName.toLowerCase().includes(query) : false;
+    //         return nameMatches || companyMatches; // Ищем и по проекту, и по компании
+    //     });
+    // }
+
+    // 1. ФИЛЬТРАЦИЯ МАССИВА ПРОЕКТОВ ПО СТЕЙТУ currentFilters
+    if (currentFilters.projects.companyName && currentFilters.projects.companyName.trim() !== '') {
+        const query = currentFilters.projects.companyName.toLowerCase().trim();
+        projects = projects.filter(p => p.companyName ? p.companyName.toLowerCase().includes(query) : false);
+    }
+    if (currentFilters.projects.projectName && currentFilters.projects.projectName.trim() !== '') {
+        const query = currentFilters.projects.projectName.toLowerCase().trim();
+        projects = projects.filter(p => p.projectName ? p.projectName.toLowerCase().includes(query) : false);
     }
 
     // ЛОГИКА СОРТИРОВКИ ПРОЕКТОВ
@@ -196,6 +235,36 @@ function createProjectsTable(data, periodKey) { // 1. Функция для сб
 
     html += '</tbody></table>';
     return html;
+}
+
+function createFilterChipsHtml(tab) {
+    const filters = currentFilters[tab];
+    let chipsHtml = '';
+    let activeCount = 0;
+    // Перебираем все ключи фильтров для данного таба
+    for (const key in filters) {
+        if (filters[key] && filters[key].trim() !== '') {
+            activeCount++;
+            // Превращаем camelCase в красивое имя (например, companyName -> Company Name)
+            const readableLabel = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+
+            chipsHtml += `
+                <div class="filter-chip">
+                    <span>${readableLabel}: <strong>${filters[key]}</strong></span>
+                    <button class="filter-chip__remove" data-filter-tab="${tab}" data-filter-key="${key}">×</button>
+                </div>
+            `;
+        }
+    }
+    // Если активных фильтров 2 или больше, ТЗ требует чипс "Clear Filters"
+    if (activeCount >= 2) {
+        chipsHtml += `
+            <div class="filter-chip filter-chip--clear-all" data-filter-clear-tab="${tab}">
+                Clear Filters
+            </div>
+        `;
+    }
+    return `<div class="filter-chips-container">${chipsHtml}</div>`;
 }
 
 function createEmployeesTable(employees, periodKey) { // ТАБЛИЦА СОТРУДНИКОВ
