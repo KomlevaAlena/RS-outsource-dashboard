@@ -9,13 +9,14 @@ function getCurrentPeriod() { // собирает "год-месяц" из се�
     const monthSelect = document.getElementById('month-select');
     const yearSelect = document.getElementById('year-select');
 
-    return yearSelect.value + '-' + monthSelect.value; // .value берет значение из <option value="...">
+    if (!monthSelect || !yearSelect) return '2026-01'; // Дефолтный фоллбек
+    return yearSelect.value + '-' + monthSelect.value;
 }
 
 function handleTabSwitch(event) {
-    const navButtons = document.querySelectorAll('.nav-button');// 1. Находим все кнопки навигации
-    const pageTitle = document.getElementById('page-title'); //2. Находим заголовок страницы и главную кнопку действия
-    const addEntityBtn = document.getElementById('add-entity-btn'); // "добавить сущность кнопки"
+    const navButtons = document.querySelectorAll('.nav-button'); // 1. Находим все кнопки навигации
+    const pageTitle = document.getElementById('page-title'); // 2. Находим заголовок страницы
+    const addEntityBtn = document.getElementById('add-entity-btn'); // Главная кнопка действия
 
     navButtons.forEach(function(btn) {
         btn.classList.remove('nav-button--active'); // 3. Убираем у всех кнопок класс активного состояния
@@ -24,25 +25,25 @@ function handleTabSwitch(event) {
     const clickedBtn = event.currentTarget;
     clickedBtn.classList.add('nav-button--active'); // 4. Добавляем класс активности той кнопке, на которую нажали
 
-    const selectedTab = clickedBtn.getAttribute('data-tab'); // 5. Проверяем, какая вкладка выбрана через data-атрибут
+    const selectedTab = clickedBtn.getAttribute('data-tab'); // 5. Проверяем, какая вкладка выбрана
 
     if (selectedTab === 'projects') {
         pageTitle.textContent = 'Projects';
-        addEntityBtn.textContent = '+ Add projects';
+        if (addEntityBtn) addEntityBtn.textContent = '+ Add projects';
     } else if (selectedTab === 'employees') {
         pageTitle.textContent = 'Employees';
-        addEntityBtn.textContent = '+ Add employee';
+        if (addEntityBtn) addEntityBtn.textContent = '+ Add employee';
     }
 
     console.log('Переключено на вкладку:', selectedTab);
 
     const period = getCurrentPeriod();
-    renderCurrentTab(selectedTab, period); // ТЕПЕРЬ МЫ БЕРЕМ ПЕРИОД ДИНАМИЧЕСКИ!
+    renderCurrentTab(selectedTab, period);
 }
 
 function handlePeriodChange() {
     const activeTabBtn = document.querySelector('.nav-button--active');
-    const selectedTab = activeTabBtn.getAttribute('data-tab');
+    const selectedTab = activeTabBtn ? activeTabBtn.getAttribute('data-tab') : 'projects';
 
     const period = getCurrentPeriod();
     renderCurrentTab(selectedTab, period);
@@ -51,111 +52,76 @@ function handlePeriodChange() {
 
 function openProjectsPanel() {
     const panel = document.getElementById('project-panel');
-    if (panel) {
-        panel.classList.add('slide-panel--open');
-    }
+    if (panel) panel.classList.add('slide-panel--open');
 }
 
 function closeProjectsPanel() {
     const panel = document.getElementById('project-panel');
-    if (panel) {
-        panel.classList.remove('slide-panel--open');
-    }
+    if (panel) panel.classList.remove('slide-panel--open');
 }
 
 function openEmployeesPanel() {
     const panel = document.getElementById('employee-panel');
-    if (panel) {
-        panel.classList.add('slide-panel--open');
-    }
+    if (panel) panel.classList.add('slide-panel--open');
 }
 
 function closeEmployeesPanel() {
     const panel = document.getElementById('employee-panel');
-    if (panel) {
-        panel.classList.remove('slide-panel--open');
-    }
+    if (panel) panel.classList.remove('slide-panel--open');
 }
 
 export function initUI() {
     const sidebar = document.getElementById('sidebar');
     const toggleBtn = document.getElementById('sidebar-toggle');
-    const navButtons = document.querySelectorAll('.nav-button'); // Находим все кнопки вкладок
-    const tabButtons = document.querySelectorAll('.sidebar__nav-btn');
+    const navButtons = document.querySelectorAll('.nav-button'); // Кнопки вкладок
 
-    const monthSelect = document.getElementById('month-select');// Находим селекторы
+    const monthSelect = document.getElementById('month-select'); // Селекторы
     const yearSelect = document.getElementById('year-select');
 
     const addEntityBtn = document.getElementById('add-entity-btn');
     const panelCloseBtn = document.getElementById('project-panel-close');
     const panelOverlay = document.getElementById('project-panel-overlay');
 
-    // const addEntityBtn = document.getElementById('add-entity-btn');
     const empCloseBtn = document.getElementById('employee-panel-close');
     const empOverlay = document.getElementById('employee-panel-overlay');
 
     if (!monthSelect || !yearSelect) return;
-    // 1. Проверяем, есть ли сохраненный период в памяти
+
+    // 1. Восстанавливаем сохраненный период из памяти браузера
     const savedMonth = localStorage.getItem('app-selected-month');
     const savedYear = localStorage.getItem('app-selected-year');
-    // Если есть — выставляем их в селекты, если нет — оставляем дефолтные (например, текущие)
+    
     if (savedMonth) monthSelect.value = savedMonth;
     if (savedYear) yearSelect.value = savedYear;
-    // Функция для получения текущего ключа периода
-    function getPeriodKey() {
-        return yearSelect.value + '-' + monthSelect.value;
-    }
-    let activeTab = 'projects';// Определяем, какая вкладка сейчас активна (по умолчанию 'projects')
-    // 2. Слушаем изменение МЕСЯЦА
+
+    // 2. Слушаем изменения селекторов периода (сохраняем в память и обновляем UI)
     monthSelect.addEventListener('change', function() {
         localStorage.setItem('app-selected-month', monthSelect.value);
-        console.log('📅 Месяц изменен на:', monthSelect.value);
-        renderCurrentTab(activeTab, getPeriodKey());
+        handlePeriodChange();
     });
-    // 3. Слушаем изменение ГОДА
+
     yearSelect.addEventListener('change', function() {
-        // Запоминаем выбор пользователя в память браузера!
         localStorage.setItem('app-selected-year', yearSelect.value);
-        
-        console.log('📅 Год изменен на:', yearSelect.value);
-        renderCurrentTab(activeTab, getPeriodKey());
+        handlePeriodChange();
     });
 
-
-    // Проверяем наличие элементов на странице
-    if (sidebar && toggleBtn) { // Логика сворачивания сайдбара
+    // 3. Логика сворачивания сайдбара
+    if (sidebar && toggleBtn) {
         toggleBtn.addEventListener('click', function() {
             sidebar.classList.toggle('sidebar--collapsed');
-            console.log('Клик зафиксирован: состояние сайдбара изменено');
         });
     }
 
-    // Логика переключения вкладок
+    // 4. Логика переключения вкладок
     navButtons.forEach(function(button) {
-        // Вешаем событие клика на каждую кнопку
         button.addEventListener('click', handleTabSwitch);
     });
 
-    if (monthSelect && yearSelect) { // Добавляем слушатель события 'change' (изменение выбора)
-        monthSelect.addEventListener('change', handlePeriodChange);
-        yearSelect.addEventListener('change', handlePeriodChange);
-    }
-
-    if (addEntityBtn) {
-        addEntityBtn.addEventListener('click', openProjectsPanel);
-    }
-
-    if (panelCloseBtn) {
-        panelCloseBtn.addEventListener('click', closeProjectsPanel);
-    }
-
-    if (panelOverlay) {
-        panelOverlay.addEventListener('click', closeProjectsPanel);
-    }
-
+    // 5. Логика открытия боковых панелей (Умный клик по главной кнопке)
     if (addEntityBtn) {
         addEntityBtn.addEventListener('click', function() {
-            const activeTab = document.querySelector('.nav-button--active').getAttribute('data-tab');// Проверяем, какой таб сейчас активен
+            const activeTabBtn = document.querySelector('.nav-button--active');
+            const activeTab = activeTabBtn ? activeTabBtn.getAttribute('data-tab') : 'projects';
             
             if (activeTab === 'projects') {
                 openProjectsPanel();
@@ -165,8 +131,16 @@ export function initUI() {
         });
     }
 
+    // 6. Слушатели закрытия панелей проектов
+    if (panelCloseBtn) panelCloseBtn.addEventListener('click', closeProjectsPanel);
+    if (panelOverlay) panelOverlay.addEventListener('click', closeProjectsPanel);
+
+    // 7. Слушатели закрытия панелей сотрудников
     if (empCloseBtn) empCloseBtn.addEventListener('click', closeEmployeesPanel);
     if (empOverlay) empOverlay.addEventListener('click', closeEmployeesPanel);
 
-    renderCurrentTab('projects', getCurrentPeriod());
+    // Первоначальный рендер при загрузке
+    const activeTabBtn = document.querySelector('.nav-button--active');
+    const initialTab = activeTabBtn ? activeTabBtn.getAttribute('data-tab') : 'projects';
+    renderCurrentTab(initialTab, getCurrentPeriod());
 }
