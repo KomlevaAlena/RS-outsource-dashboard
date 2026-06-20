@@ -137,7 +137,7 @@ export function renderCurrentTab(tabName, periodKey) {
         };
 
     } else if (tabName === 'employees') {
-        container.innerHTML = createEmployeesTable(data.employees, periodKey);
+        container.innerHTML = createEmployeesTable(data.employees, periodKey, currentSort);
 
         // --- ЕДИНЫЙ ОБРАБОТЧИК КЛИКОВ (СОТРУДНИКИ) ---
         container.onclick = function(event) {

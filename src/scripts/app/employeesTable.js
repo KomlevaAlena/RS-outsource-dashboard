@@ -3,7 +3,7 @@ import { store } from './store.js';
 import { calculateVacationFactor, calculateEffectiveCapacity } from './formulas.js';
 import { currentFilters, createFilterChipsHtml } from './filters.js';
 
-export function handleDeleteEmployee(employeeId, periodKey) {
+export function handleDeleteEmployee(employeeId, periodKey, onRefresh) {
     const isConfirmed = confirm('Are you sure you want to remove this employee?');
     if (!isConfirmed) return;
 
@@ -16,10 +16,10 @@ export function handleDeleteEmployee(employeeId, periodKey) {
     allData[periodKey] = monthData;
     store.saveData(allData);
     console.log(`❌ Сотрудник с ID ${employeeId} удален`);
-    renderCurrentTab('employees', periodKey);
+    onRefresh();
 }
 
-export function updateEmployeeField(employeeId, field, newValue, periodKey) {
+export function updateEmployeeField(employeeId, field, newValue, periodKey, onRefresh) {
     const monthData = store.getMonthData(periodKey);
     const employee = monthData.employees.find(emp => emp.id === employeeId);
 
@@ -28,14 +28,14 @@ export function updateEmployeeField(employeeId, field, newValue, periodKey) {
             const numValue = Number(newValue);
             if (isNaN(numValue) || numValue <= 0) {
                 alert('Please enter the correct salary amount');
-                renderCurrentTab('employees', periodKey);
+                onRefresh();
                 return;
             }
             employee[field] = numValue;
         } else {
             if (newValue.trim() === '') {
                 alert('The field cannot be empty');
-                renderCurrentTab('employees', periodKey);
+                onRefresh();
                 return;
             }
             employee[field] = newValue.trim();
@@ -44,10 +44,11 @@ export function updateEmployeeField(employeeId, field, newValue, periodKey) {
         allData[periodKey] = monthData;
         store.saveData(allData);
         console.log(`📝 Сотрудник ${employeeId}: поле ${field} обновлено на ${newValue}`);
+        onRefresh();
     }
 }
 
-export function createEmployeesTable(employees, periodKey) {
+export function createEmployeesTable(employees, periodKey, currentSort) {
     if (employees.length === 0) {
         return '<p class="empty-state">No employees added yet</p>';
     }
@@ -55,11 +56,11 @@ export function createEmployeesTable(employees, periodKey) {
     let displayedEmployees = employees || [];
 
     // 1. ФИЛЬТРАЦИЯ МАССИВА СОТРУДНИКОВ ПО СТЕЙТУ currentFilters.employees
-    if (currentFilters.employees.name && currentFilters.employees.name.trim() !=='') {
+    if (currentFilters.employees.name && currentFilters.employees.name.trim() !== '') {
         const query = currentFilters.employees.name.toLowerCase().trim();
         displayedEmployees = displayedEmployees.filter(emp => {
             if (!emp.name) return false;
-            const firstName = emp.name.split(' ')[0] || '';// Берем первое слово из полного имени
+            const firstName = emp.name.split(' ')[0] || ''; // Берем первое слово из полного имени
             return firstName.toLowerCase().includes(query);
         });
     }
@@ -70,18 +71,17 @@ export function createEmployeesTable(employees, periodKey) {
             if (!emp.name) return false;
             const surname = emp.name.split(' ').slice(1).join(' ') || ''; // Берем все слова после первого (фамилию)
             return surname.toLowerCase().includes(query);
-        })
+        });
     }
 
     if (currentFilters.employees.position && currentFilters.employees.position.trim() !== '') {
         const query = currentFilters.employees.position.toLowerCase().trim();
         displayedEmployees = displayedEmployees.filter(emp => 
-            emp.position ? emp.position.toLowerCase().includes(query) : falses
+            emp.position ? emp.position.toLowerCase().includes(query) : false
         );
     }
 
-
-
+    // 2. СОРТИРОВКА
     if (currentSort.tab === 'employees' && currentSort.field) {
         displayedEmployees = [...displayedEmployees].sort(function(a, b) {
             let valA, valB;
@@ -112,11 +112,6 @@ export function createEmployeesTable(employees, periodKey) {
         return '';
     }
 
-    if (displayedEmployees.length === 0) {
-        html += '<p class="empty-state">No employees found for this position</p>';
-        return html;
-    }
-
     // 3. ГЕНЕРИРУЕМ ЧИПСЫ НАД ТАБЛИЦЕЙ СОТРУДНИКОВ
     let html = createFilterChipsHtml('employees');
 
@@ -126,12 +121,11 @@ export function createEmployeesTable(employees, periodKey) {
     }
 
     // 4. СТРОИМ ТАБЛИЦУ
-
     html += `
     <table class="table">
         <thead>
             <tr>
-            <th class="sortable" data-sort="name">
+                <th class="sortable" data-sort="name">
                     Name${getArrow('name')}
                     <span class="filter-icon" data-filter-field="name">⌕</span>
                 </th>
@@ -143,8 +137,6 @@ export function createEmployeesTable(employees, periodKey) {
                     Position${getArrow('position')}
                     <span class="filter-icon" data-filter-field="position">⌕</span>
                 </th>
-                <th class="sortable" data-sort="name">Name${getArrow('name')}</th>
-                <th class="sortable" data-sort="position">Position${getArrow('position')}</th>
                 <th class="sortable" data-sort="age">Age${getArrow('age')}</th>
                 <th class="sortable" data-sort="salary">Salary${getArrow('salary')}</th>
                 <th class="sortable" data-sort="vacationFactor">Vacation Factor${getArrow('vacationFactor')}</th>
@@ -159,9 +151,14 @@ export function createEmployeesTable(employees, periodKey) {
         const vacationFactor = calculateVacationFactor(emp, periodKey);
         const effectiveCapacity = calculateEffectiveCapacity(emp, periodKey);
 
+        const nameParts = emp.name ? emp.name.split(' ') : ['Unknown', ''];
+        const firstName = nameParts[0];
+        const surname = nameParts.slice(1).join(' ') || '—';
+
         html += `
             <tr>
-                <td>${emp.name}</td>
+                <td>${firstName}</td>
+                <td>${surname}</td>
                 <td class="editable" data-id="${emp.id}" data-field="position">${emp.position}</td>
                 <td>${emp.age} y.o.</td>
                 <td class="editable" data-id="${emp.id}" data-field="salary">${emp.salary} $</td>
