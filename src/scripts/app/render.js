@@ -225,19 +225,47 @@ function createEmployeesTable(employees, periodKey) {
 
     let displayedEmployees = employees || [];
 
-    const allPositions = [];
-    displayedEmployees.forEach(function(emp) {
-        if (emp.position && !allPositions.includes(emp.position)) {
-            allPositions.push(emp.position);
-        }
-    });
-    allPositions.sort();
+    // const allPositions = [];
+    // displayedEmployees.forEach(function(emp) {
+    //     if (emp.position && !allPositions.includes(emp.position)) {
+    //         allPositions.push(emp.position);
+    //     }
+    // });
+    // allPositions.sort();
 
-    if (currentFilters.employeePosition && currentFilters.employeePosition !== '') {
-        displayedEmployees = displayedEmployees.filter(function(emp) {
-            return emp.position === currentFilters.employeePosition;
+    // if (currentFilters.employeePosition && currentFilters.employeePosition !== '') {
+    //     displayedEmployees = displayedEmployees.filter(function(emp) {
+    //         return emp.position === currentFilters.employeePosition;
+    //     });
+    // }
+
+    // 1. ФИЛЬТРАЦИЯ МАССИВА СОТРУДНИКОВ ПО СТЕЙТУ currentFilters.employees
+    if (currentFilters.employees.name && currentFilters.employees.name.trim() !=='') {
+        const query = currentFilters.employees.name.toLowerCase().trim();
+        displayedEmployees = displayedEmployees.filter(emp => {
+            if (!emp.name) return false;
+            const firstName = emp.name.split(' ')[0] || '';// Берем первое слово из полного имени
+            return firstName.toLowerCase().includes(query);
         });
     }
+
+    if (currentFilters.employees.surname && currentFilters.employees.surname.trim() !== '') {
+        const query = currentFilters.employees.surname.toLowerCase().trim();
+        displayedEmployees = displayedEmployees.filter(emp => {
+            if (!emp.name) return false;
+            const surname = emp.name.split(' ').slice(1).join(' ') || ''; // Берем все слова после первого (фамилию)
+            return surname.toLowerCase().includes(query);
+        })
+    }
+
+    if (currentFilters.employees.position && currentFilters.employees.position.trim() !== '') {
+        const query = currentFilters.employees.position.toLowerCase().trim();
+        displayedEmployees = displayedEmployees.filter(emp => 
+            emp.position ? emp.position.toLowerCase().includes(query) : falses
+        );
+    }
+
+
 
     if (currentSort.tab === 'employees' && currentSort.field) {
         displayedEmployees = [...displayedEmployees].sort(function(a, b) {
@@ -269,29 +297,51 @@ function createEmployeesTable(employees, periodKey) {
         return '';
     }
 
-    let optionsHtml = `<option value="">All Positions</option>`;
-    allPositions.forEach(function(pos) {
-        const selected = currentFilters.employeePosition === pos ? 'selected' : '';
-        optionsHtml += `<option value="${pos}" ${selected}>${pos}</option>`;
-    });
+    // let optionsHtml = `<option value="">All Positions</option>`;
+    // allPositions.forEach(function(pos) {
+    //     const selected = currentFilters.employeePosition === pos ? 'selected' : '';
+    //     optionsHtml += `<option value="${pos}" ${selected}>${pos}</option>`;
+    // });
 
-    let html = `
-    <div class="table-actions">
-        <select id="employee-position-filter" class="select select--filter" style="max-width: 250px; margin-bottom: 15px; padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc;">
-            ${optionsHtml}
-        </select>
-    </div>
-    `;
+    // let html = `
+    // <div class="table-actions">
+    //     <select id="employee-position-filter" class="select select--filter" style="max-width: 250px; margin-bottom: 15px; padding: 6px 10px; border-radius: 4px; border: 1px solid #ccc;">
+    //         ${optionsHtml}
+    //     </select>
+    // </div>
+    // `;
 
     if (displayedEmployees.length === 0) {
         html += '<p class="empty-state">No employees found for this position</p>';
         return html;
     }
 
+    // 3. ГЕНЕРИРУЕМ ЧИПСЫ НАД ТАБЛИЦЕЙ СОТРУДНИКОВ
+    let html = createFilterChipsHtml('employees');
+
+    if (displayedEmployees.length === 0) {
+        html += '<p class="empty-state">No employees found matching filters</p>';
+        return html;
+    }
+
+    // 4. СТРОИМ ТАБЛИЦУ
+
     html += `
     <table class="table">
         <thead>
             <tr>
+            <th class="sortable" data-sort="name">
+                    Name${getArrow('name')}
+                    <span class="filter-icon" data-filter-field="name">⌕</span>
+                </th>
+                <th>
+                    Surname
+                    <span class="filter-icon" data-filter-field="surname">⌕</span>
+                </th>
+                <th class="sortable" data-sort="position">
+                    Position${getArrow('position')}
+                    <span class="filter-icon" data-filter-field="position">⌕</span>
+                </th>
                 <th class="sortable" data-sort="name">Name${getArrow('name')}</th>
                 <th class="sortable" data-sort="position">Position${getArrow('position')}</th>
                 <th class="sortable" data-sort="age">Age${getArrow('age')}</th>
@@ -579,7 +629,9 @@ export function renderCurrentTab(tabName, periodKey) {
     } else if (tabName === 'employees') {
         container.innerHTML = createEmployeesTable(data.employees, periodKey);
 
+        // --- ЕДИНЫЙ ОБРАБОТЧИК КЛИКОВ (СОТРУДНИКИ) ---
         container.onclick = function(event) {
+            // 1. Клик по сортировке
             if (event.target.classList.contains('sortable')) {
                 const sortField = event.target.getAttribute('data-sort');
                 if (currentSort.tab === 'employees' && currentSort.field === sortField) {
@@ -593,24 +645,90 @@ export function renderCurrentTab(tabName, periodKey) {
                 return;
             }
 
+            // 2. КЛИК ПО ИКОНКЕ ЛУПЫ ⌕ (ОТКРЫВАЕМ ПОП-АП ФИЛЬТРА)
+            if (event.target.classList.contains('filter-icon')) {
+                event.stopPropagation();
+                
+                const oldPopup = document.querySelector('.filter-popup');
+                if (oldPopup) oldPopup.remove();
+
+                const field = event.target.getAttribute('data-filter-field');
+                const th = event.target.closest('th');
+                
+                const popup = document.createElement('div');
+                popup.className = 'filter-popup';
+                popup.innerHTML = `
+                    <input type="text" id="filter-popup-input" class="filter-popup__input" placeholder="Search..." value="${currentFilters.employees[field]}">
+                    <div class="filter-popup__actions">
+                        <button class="filter-popup__btn" id="filter-btn-cancel">Cancel</button>
+                        <button class="filter-popup__btn filter-popup__btn--apply" id="filter-btn-apply" data-field="${field}">Apply</button>
+                    </div>
+                `;
+                th.appendChild(popup);
+                
+                const input = popup.querySelector('#filter-popup-input');
+                input.focus();
+                input.onkeydown = function(e) {
+                    if (e.key === 'Enter') popup.querySelector('#filter-btn-apply').click();
+                };
+                return;
+            }
+
+            // 3. НАЖАТИЕ КНОПКИ APPLY В ПОП-АПЕ
+            if (event.target.id === 'filter-btn-apply') {
+                const field = event.target.getAttribute('data-field');
+                const val = document.getElementById('filter-popup-input').value;
+                currentFilters.employees[field] = val; // Записываем в стейт сотрудников
+                renderCurrentTab('employees', periodKey);
+                return;
+            }
+
+            // 4. НАЖАТИЕ КНОПКИ CANCEL В ПОП-АПЕ
+            if (event.target.id === 'filter-btn-cancel') {
+                const popup = event.target.closest('.filter-popup');
+                if (popup) popup.remove();
+                return;
+            }
+
+            // 5. УДАЛЕНИЕ ОТДЕЛЬНОГО ЧИПСА (клик по "×")
+            if (event.target.classList.contains('filter-chip__remove')) {
+                const key = event.target.getAttribute('data-filter-key');
+                currentFilters.employees[key] = ''; // Сбрасываем конкретное поле сотрудников
+                renderCurrentTab('employees', periodKey);
+                return;
+            }
+
+            // 6. КЛИК НА ЧИПС "CLEAR FILTERS"
+            if (event.target.classList.contains('filter-chip--clear-all')) {
+                currentFilters.employees.name = '';
+                currentFilters.employees.surname = '';
+                currentFilters.employees.position = '';
+                renderCurrentTab('employees', periodKey);
+                return;
+            }
+
+            // 7. ЗАКРЫТИЕ ПОП-АПА ПРИ КЛИКЕ МИМО НЕГО
+            const openPopup = document.querySelector('.filter-popup');
+            if (openPopup && !event.target.closest('.filter-popup')) {
+                openPopup.remove();
+            }
+
+            // 8. Клик по календарю отпусков
             if (event.target.classList.contains('btn-availability')) {
                 const employeeId = event.target.getAttribute('data-id');
                 openVacationCalendar(employeeId, periodKey);
             }
 
+            // 9. Клик по удалению сотрудника
             if (event.target.classList.contains('btn-delete--emp')) {
                 const employeeId = event.target.getAttribute('data-id');
                 handleDeleteEmployee(employeeId, periodKey);
             }
         };
 
-        container.onchange = function(event) {
-            if (event.target.id === 'employee-position-filter') {
-                currentFilters.employeePosition = event.target.value;
-                renderCurrentTab('employees', periodKey);
-            }
-        };
+        // Старый container.onchange для селекта должностей удаляем, он больше не нужен!
 
+        // --- ДАБЛКЛИК ДЛЯ РЕДАКТИРОВАНИЯ (СОТРУДНИКИ) ---
         container.ondblclick = function(event) {
             const cell = event.target;
             if (cell.classList.contains('editable') && !cell.querySelector('input')) {
