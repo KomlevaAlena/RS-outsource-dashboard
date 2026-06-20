@@ -48,7 +48,7 @@ export function updateEmployeeField(employeeId, field, newValue, periodKey, onRe
     }
 }
 
-export function createEmployeesTable(employees, periodKey, currentSort) {
+export function createEmployeesTable(employees, periodKey, currentSort, onRefresh) {
     if (employees.length === 0) {
         return '<p class="empty-state">No employees added yet</p>';
     }
@@ -173,5 +173,79 @@ export function createEmployeesTable(employees, periodKey, currentSort) {
     });
 
     html += '</tbody></table>';
+
+    // Слушатель двойного клика с умным дропдауном для должностей
+    setTimeout(() => {
+        const table = document.querySelector('.table');
+        if (table && !table.dataset.dblclickAssigned) {
+            table.dataset.dblclickAssigned = 'true';
+            
+            table.ondblclick = function(event) {
+                const cell = event.target;
+                
+                // Проверяем, что кликнули по редактируемой ячейке, в которой еще нет инпута или селекта
+                if (cell.classList.contains('editable') && !cell.querySelector('input') && !cell.querySelector('select')) {
+                    const currentText = cell.textContent.replace(' $', '').trim();
+                    const employeeId = cell.getAttribute('data-id');
+                    const field = cell.getAttribute('data-field');
+
+                    if (field === 'position') {
+                        // Создаем выпадающий список (dropdown) для должностей по ТЗ
+                        const select = document.createElement('select');
+                        select.className = 'table-inline-select';
+                        
+                        const roles = ['Junior', 'Middle', 'Senior', 'Lead', 'Architect', 'BO'];
+                        roles.forEach(role => {
+                            const option = document.createElement('option');
+                            option.value = role;
+                            option.textContent = role;
+                            if (role.toLowerCase() === currentText.toLowerCase()) {
+                                option.selected = true;
+                            }
+                            select.appendChild(option);
+                        });
+                        
+                        cell.innerHTML = '';
+                        cell.appendChild(select);
+                        select.focus();
+                        
+                        function finishSelectEditing() {
+                            updateEmployeeField(employeeId, field, select.value, periodKey, onRefresh);
+                        }
+                        
+                        // Сохраняем при изменении или потере фокуса
+                        select.onchange = finishSelectEditing;
+                        select.onblur = finishSelectEditing;
+                        
+                    } else if (field === 'salary') {
+                        // Создаем числовое поле для зарплаты
+                        const input = document.createElement('input');
+                        input.type = 'number';
+                        input.min = '0'; // Запрещаем мотать в минус
+                        input.value = currentText;
+                        input.className = 'table-inline-input';
+                        
+                        cell.innerHTML = '';
+                        cell.appendChild(input);
+                        input.focus();
+                        
+                        function finishInputEditing() {
+                            updateEmployeeField(employeeId, field, input.value, periodKey, onRefresh);
+                        }
+                        
+                        input.onkeydown = e => { 
+                            if (e.key === 'Enter') input.blur(); // Blur сам вызовет finishInputEditing
+                            if (e.key === 'Escape') {
+                                // При отмене возвращаем старое значение
+                                cell.innerHTML = currentText + ' $';
+                            }
+                        };
+                        input.onblur = finishInputEditing;
+                    }
+                }
+            };
+        }
+    }, 0);
+
     return html;
 }

@@ -137,7 +137,13 @@ export function renderCurrentTab(tabName, periodKey) {
         };
 
     } else if (tabName === 'employees') {
-        container.innerHTML = createEmployeesTable(data.employees, periodKey, currentSort);
+        // Обязательно передаем четвертым аргументом колбэк для перерисовки!
+        container.innerHTML = createEmployeesTable(
+            data.employees, 
+            periodKey, 
+            currentSort, 
+            () => renderCurrentTab('employees', periodKey)
+        );
 
         // --- ЕДИНЫЙ ОБРАБОТЧИК КЛИКОВ (СОТРУДНИКИ) ---
         container.onclick = function(event) {
@@ -168,7 +174,7 @@ export function renderCurrentTab(tabName, periodKey) {
                 const popup = document.createElement('div');
                 popup.className = 'filter-popup';
                 popup.innerHTML = `
-                    <input type="text" id="filter-popup-input" class="filter-popup__input" placeholder="Search..." value="${currentFilters.employees[field]}">
+                    <input type="text" id="filter-popup-input" class="filter-popup__input" placeholder="Search..." value="${currentFilters.employees[field] || ''}">
                     <div class="filter-popup__actions">
                         <button class="filter-popup__btn" id="filter-btn-cancel">Cancel</button>
                         <button class="filter-popup__btn filter-popup__btn--apply" id="filter-btn-apply" data-field="${field}">Apply</button>
@@ -188,7 +194,7 @@ export function renderCurrentTab(tabName, periodKey) {
             if (event.target.id === 'filter-btn-apply') {
                 const field = event.target.getAttribute('data-field');
                 const val = document.getElementById('filter-popup-input').value;
-                currentFilters.employees[field] = val; // Записываем в стейт сотрудников
+                currentFilters.employees[field] = val; 
                 renderCurrentTab('employees', periodKey);
                 return;
             }
@@ -203,7 +209,7 @@ export function renderCurrentTab(tabName, periodKey) {
             // 5. УДАЛЕНИЕ ОТДЕЛЬНОГО ЧИПСА (клик по "×")
             if (event.target.classList.contains('filter-chip__remove')) {
                 const key = event.target.getAttribute('data-filter-key');
-                currentFilters.employees[key] = ''; // Сбрасываем конкретное поле сотрудников
+                currentFilters.employees[key] = ''; 
                 renderCurrentTab('employees', periodKey);
                 return;
             }
@@ -232,41 +238,8 @@ export function renderCurrentTab(tabName, periodKey) {
             // 9. Клик по удалению сотрудника
             if (event.target.classList.contains('btn-delete--emp')) {
                 const employeeId = event.target.getAttribute('data-id');
-                handleDeleteEmployee(employeeId, periodKey);
-            }
-        };
-
-        // Старый container.onchange для селекта должностей удаляем, он больше не нужен!
-
-        // --- ДАБЛКЛИК ДЛЯ РЕДАКТИРОВАНИЯ (СОТРУДНИКИ) ---
-        container.ondblclick = function(event) {
-            const cell = event.target;
-            if (cell.classList.contains('editable') && !cell.querySelector('input')) {
-                const currentText = cell.textContent.replace(' $', '').trim();
-                const employeeId = cell.getAttribute('data-id');
-                const field = cell.getAttribute('data-field');
-                
-                const input = document.createElement('input');
-                input.type = field === 'salary' ? 'number' : 'text';
-                input.value = currentText;
-                input.className = 'table-inline-input';
-                
-                cell.innerHTML = '';
-                cell.appendChild(input);
-                input.focus();
-                
-                function finishEditing() {
-                    const newValue = input.value;
-                    updateEmployeeField(employeeId, field, newValue, periodKey);
-                    renderCurrentTab('employees', periodKey);
-                }
-                
-                input.onkeydown = function(e) {
-                    if (e.key === 'Enter') finishEditing();
-                };
-                input.onblur = function() {
-                    finishEditing();
-                };
+                // Передаем функцию обновления третьим аргументом
+                handleDeleteEmployee(employeeId, periodKey, () => renderCurrentTab('employees', periodKey));
             }
         };
     }

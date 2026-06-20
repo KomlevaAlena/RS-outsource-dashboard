@@ -156,3 +156,15 @@ th.sortable {
         background-color: rgba(0, 0, 0, 0.05); // Легкий визуальный отклик
     }
 }
+
+.table-inline-select {
+    width: 100%;
+    padding: 4px 8px;
+    font-size: 14px;
+    border: 1px solid var(--primary-color, #4a90e2);
+    border-radius: 4px;
+    background-color: #fff;
+    color: #333;
+    outline: none;
+    cursor: pointer;
+}
