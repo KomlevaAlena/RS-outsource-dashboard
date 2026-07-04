@@ -2,6 +2,7 @@
 import { store } from './store.js';
 import { calculateVacationFactor, calculateEffectiveCapacity } from './formulas.js';
 import { currentFilters, createFilterChipsHtml } from './filters.js';
+import { formatCurrency } from './format-currency.js';
 
 export function handleDeleteEmployee(employeeId, periodKey, onRefresh) {
     const isConfirmed = confirm('Are you sure you want to remove this employee?');
@@ -161,7 +162,7 @@ export function createEmployeesTable(employees, periodKey, currentSort, onRefres
                 <td>${surname}</td>
                 <td class="editable" data-id="${emp.id}" data-field="position">${emp.position}</td>
                 <td>${emp.age} y.o.</td>
-                <td class="editable" data-id="${emp.id}" data-field="salary">${emp.salary} $</td>
+                <td class="editable" data-id="${emp.id}" data-field="salary">${formatCurrency(emp.salary)}</td>
                 <td><span class="badge badge--factor">${vacationFactor}</span></td>
                 <td><span class="badge badge--capacity">${effectiveCapacity}%</span></td>
                 <td>
@@ -185,7 +186,11 @@ export function createEmployeesTable(employees, periodKey, currentSort, onRefres
                 
                 // Проверяем, что кликнули по редактируемой ячейке, в которой еще нет инпута или селекта
                 if (cell.classList.contains('editable') && !cell.querySelector('input') && !cell.querySelector('select')) {
-                    const currentText = cell.textContent.replace(' $', '').trim();
+                    // const currentText = cell.textContent.replace(' $', '').trim();
+                    let currentText = cell.textContent.trim();
+                    if (field === 'salary') {
+                        currentText = currentText.replace(/[^0-9.]/g, '');
+                    }
                     const employeeId = cell.getAttribute('data-id');
                     const field = cell.getAttribute('data-field');
 
@@ -237,7 +242,8 @@ export function createEmployeesTable(employees, periodKey, currentSort, onRefres
                             if (e.key === 'Enter') input.blur(); // Blur сам вызовет finishInputEditing
                             if (e.key === 'Escape') {
                                 // При отмене возвращаем старое значение
-                                cell.innerHTML = currentText + ' $';
+                                // cell.innerHTML = currentText + ' $';
+                                cell.innerHTML = formatCurrency(currentText);
                             }
                         };
                         input.onblur = finishInputEditing;
