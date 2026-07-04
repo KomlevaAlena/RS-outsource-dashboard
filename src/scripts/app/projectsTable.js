@@ -1,6 +1,7 @@
 import { store } from './store.js';
 import { calculateProjectFinance, calculateGlobalFinance } from './formulas.js';
 import { currentFilters, createFilterChipsHtml } from './filters.js';
+import { formatCurrency } from './format-currency.js';
 
 export function handleDeleteProject(projectId, periodKey) { // --- ЛОГИКА УДАЛЕНИЯ ПРОЕКТОВ
     const isConfirmed = confirm('Are you sure you want to delete this project?');
@@ -36,15 +37,16 @@ export function createFinancialSummary(data, periodKey) {
             </div>
             <div class="fin-card">
                 <span class="fin-card__title">Total Revenue</span>
-                <span class="fin-card__value">${globalFinance.totalBudget.toLocaleString()} $</span>
+                <span class="fin-card__value">${formatCurrency(globalFinance.totalBudget)}</span>
             </div>
             <div class="fin-card">
                 <span class="fin-card__title">Total Expenses</span>
-                <span class="fin-card__value">${globalFinance.totalExpenses.toLocaleString()} $</span>
+                
+                <span class="fin-card__value">${formatCurrency(globalFinance.totalExpenses)}</span>
             </div>
             <div class="fin-card">
                 <span class="fin-card__title">Total Profit</span>
-                <span class="fin-card__value">${globalFinance.totalProfit.toLocaleString()} $</span>
+                <span class="fin-card__value">${formatCurrency(globalFinance.totalProfit)}</span>
             </div>
         </div>
     `;
@@ -131,12 +133,12 @@ export function createProjectsTable(data, periodKey, currentSort) {
             <tr>
                 <td>${project.companyName}</td>
                 <td>${project.projectName}</td>
-                <td>${project.budget.toLocaleString()} $</td>
+                <td>${formatCurrency(project.budget)}</td>
                 <td class="clickable-capacity" data-id="${project.id}">
                     <span class="capacity-link">${finance.effectiveCapacity} / ${project.capacity} p.</span>
                 </td>
-                <td>${finance.expenses.toLocaleString()} $</td>
-                <td class="${profitClass}"><strong>${finance.profit.toLocaleString()} $</strong></td>
+                <td>${formatCurrency(finance.expenses)}</td>
+                <td class="${profitClass}"><strong>${formatCurrency(finance.profit)}</strong></td>
                 <td>
                     <button class="btn-assign" data-id="${project.id}">Assign</button>
                     <button class="btn-delete" data-id="${project.id}">Delete</button>
