@@ -2,6 +2,8 @@ import { store } from './store.js';
 import { calculateProjectFinance, calculateGlobalFinance } from './formulas.js';
 import { currentFilters, createFilterChipsHtml } from './filters.js';
 import { formatCurrency } from './format-currency.js';
+import { renderCurrentTab } from './render.js';
+
 
 export function handleDeleteProject(projectId, periodKey) { // --- ЛОГИКА УДАЛЕНИЯ ПРОЕКТОВ
     const isConfirmed = confirm('Are you sure you want to delete this project?');
@@ -185,7 +187,12 @@ export function openDetailsModal(projectId, periodKey) {
                 listHtml += `
                     <li class="team-item">
                         <div class="team-item__info">
-                            <strong class="team-item__name">${employee.name}</strong>
+                            <a href="#" class="team-item__name employee-link" 
+                                data-id="${employee.id}" 
+                                data-name="${employee.name}" 
+                                data-surname="${employee.surname || ''}">
+                                ${employee.name}
+                            </a>
                             <span class="team-item__position">${employee.position}</span>
                         </div>
                         <div class="team-item__actions">
@@ -205,6 +212,86 @@ export function openDetailsModal(projectId, periodKey) {
     }
 
     modal.onclick = function(event) {
+
+        // Клик по ссылке сотрудника — открываем контекстное меню
+        if (event.target.classList.contains('employee-link')) {
+            event.preventDefault();
+            console.log('Вы кликнули на сотрудника, создаем меню...');
+            
+            // Ищем старое меню теперь именно внутри модалки, а не по всему документу
+            const oldMenu = modal.querySelector('.action-menu');
+            if (oldMenu) oldMenu.remove();
+
+            const empId = event.target.getAttribute('data-id');
+            const empName = event.target.getAttribute('data-name');
+
+            const menu = document.createElement('div');
+            menu.className = 'action-menu';
+            menu.style.position = 'fixed'; // Изменили absolute на fixed, чтобы меню не улетало при прокрутке модалки
+            menu.style.top = `${event.clientY}px`; // Используем clientY вместо pageY для точного позиционирования на экране
+            menu.style.left = `${event.clientX}px`; // Используем clientX вместо pageX
+            menu.style.zIndex = '2000';
+            menu.style.background = '#fff';
+            menu.style.border = '1px solid #ccc';
+            menu.style.padding = '5px';
+            menu.style.boxShadow = '0px 2px 5px rgba(0,0,0,0.2)';
+
+            menu.innerHTML = `
+                <button class="menu-btn-see" data-name="${empName}" style="display:block; width:100%; text-align:left; margin-bottom:4px;">See at Employees</button>
+                <button class="menu-btn-unassign" data-emp-id="${empId}" style="display:block; width:100%; text-align:left;">Unassign</button>
+            `;
+
+            // ГЛАВНОЕ ИСПРАВЛЕНИЕ: добавляем меню внутрь модалки, чтобы клики по нему перехватывались!
+            modal.appendChild(menu);
+            return;
+        }
+
+        // Клик по кнопке "See at Employees"
+        if (event.target.classList.contains('menu-btn-see')) {
+            console.log('Нажата кнопка перевода на вкладку сотрудников');
+            const name = event.target.getAttribute('data-name');
+            
+            if (currentFilters && currentFilters.employees) {
+                currentFilters.employees.name = name; // Выставляем фильтр
+            }
+            
+            // Закрываем модалку деталей
+            const detailsModal = document.getElementById('details-modal');
+            if (detailsModal) detailsModal.classList.remove('modal--open');
+            
+            // Удаляем само меню
+            const actionMenu = modal.querySelector('.action-menu');
+            if (actionMenu) actionMenu.remove();
+            
+            // Перерисовываем вкладку
+            renderCurrentTab('employees', periodKey);
+            return;
+        }
+
+        // Клик по кнопке "Unassign"
+        if (event.target.classList.contains('menu-btn-unassign')) {
+            console.log('Нажата кнопка Unassign');
+            const empId = event.target.getAttribute('data-emp-id');
+            
+            const actionMenu = modal.querySelector('.action-menu');
+            if (actionMenu) actionMenu.remove();
+            
+            // Находим стандартный крестик удаления для этого сотрудника в модалке и «кликаем» по нему
+            const removeBtn = modal.querySelector(`.btn-remove-asm[data-employee-id="${empId}"]`);
+            if (removeBtn) {
+                removeBtn.click();
+            } else {
+                console.log('Не удалось найти кнопку удаления с data-employee-id=' + empId);
+            }
+            return;
+        }
+        // Удаление контекстного меню при клике в любое другое место
+        // Теперь ищем открытое меню строго внутри модалки
+            const openMenu = modal.querySelector('.action-menu');
+            if (openMenu && !event.target.closest('.action-menu')) {
+                openMenu.remove();
+            }
+
         if (event.target.classList.contains('btn-remove-asm')) {
             const pId = event.target.getAttribute('data-project-id');
             const eId = event.target.getAttribute('data-employee-id');

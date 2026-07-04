@@ -4,6 +4,7 @@
  */
 
 import { store } from './store.js';
+import { renderCurrentTab } from './render.js';
 
 // Функция, которая просто убирает класс видимости
 export function closeAssignModal() {
