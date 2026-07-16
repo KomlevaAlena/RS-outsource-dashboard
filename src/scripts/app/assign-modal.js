@@ -5,6 +5,7 @@
 
 import { store } from './store.js';
 import { renderCurrentTab } from './render.js';
+import { getEmployeeAvailableCapacity } from './validation.js';
 
 // Функция, которая просто убирает класс видимости
 export function closeAssignModal() {
@@ -57,9 +58,47 @@ export function initAssignModal() {
 
             console.log('✏️ СОХРАНЯЕМ НАЗНАЧЕНИЕ. Ключ периода:', periodKey);
             // Проверка выбора сотрудника?
+            // if (!employeeId) {
+            //     alert('Please select an employee first!');
+            //     return;
+            // }
+            // 1. Профессиональная валидация на выбор сотрудника
+            const empSelect = document.getElementById('assign-emp-select');
             if (!employeeId) {
-                alert('Please select an employee first!');
+                empSelect.classList.add('is-invalid'); // Добавляем красный бордер через CSS класс
+                console.warn('⚠️ Ошибка валидации: Сотрудник не выбран');
                 return;
+            } else {
+                empSelect.classList.remove('is-invalid');
+            }
+
+            // 2. Умная валидация суммарной загрузки сотрудника (Capacity)
+            // Вызываем нашу внешнюю функцию, передавая ID, период и ID текущего проекта
+            const availableCapacity = getEmployeeAvailableCapacity(employeeId, periodKey, projectId);
+
+            if (capacity > availableCapacity) {
+                console.warn(`⚠️ Превышен лимит загрузки! Доступно: ${availableCapacity}%, запрошено: ${capacity}%`);
+                
+                // Вместо alert подсвечиваем ползунок красным цветом или выводим кастомное сообщение
+                rangeInput.classList.add('is-invalid');
+                
+                // Создаем или находим блок ошибки на форме для вывода красивого сообщения
+                let errorDiv = document.getElementById('assign-error-msg');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.id = 'assign-error-msg';
+                    errorDiv.style.color = '#dc3545';
+                    errorDiv.style.marginTop = '10px';
+                    errorDiv.style.fontWeight = 'bold';
+                    form.appendChild(errorDiv);
+                }
+                errorDiv.textContent = `Error: Employee exceeds 100% load. Max available: ${availableCapacity}%`;
+                return;
+            } else {
+                // Если всё хорошо — убираем ошибки, если они висели раньше
+                rangeInput.classList.remove('is-invalid');
+                const errorDiv = document.getElementById('assign-error-msg');
+                if (errorDiv) errorDiv.remove();
             }
             const monthData = store.getMonthData(periodKey);// 1. Достаем данные текущего месяца
             if (!monthData.assignments) { // 2. Если 'assignments' еще нет в этом месяце — создаем его пустым
@@ -81,20 +120,13 @@ export function initAssignModal() {
                 monthData.assignments.push(newAssignment);
                 console.log('🔗 Новое назначение добавлено в Стор:', newAssignment);
             }
-            // 3. обьект с назначением сотрудника
-            // const newAssignment = {
-            //     projectId: projectId,
-            //     employeeId: employeeId,
-            //     capacity: capacity
-            // };
-            // monthData.assignments.push(newAssignment); // добавляем назначение
 
             const allData = store.getRawData(); // 5. Сохраняем обновленный месяц обратно в LocalStorage
             allData[periodKey] = monthData;
             store.saveData(allData);
 
             // console.log('🔗 Успешное назначение в Стор:', newAssignment);
-            alert('Employee successfully assigned to the project!');
+            // alert('Employee successfully assigned to the project!');
             
             closeAssignModal();
             renderCurrentTab('projects', periodKey);
