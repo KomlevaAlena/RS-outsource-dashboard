@@ -187,12 +187,15 @@ export function createEmployeesTable(employees, periodKey, currentSort, onRefres
                 // Проверяем, что кликнули по редактируемой ячейке, в которой еще нет инпута или селекта
                 if (cell.classList.contains('editable') && !cell.querySelector('input') && !cell.querySelector('select')) {
                     // const currentText = cell.textContent.replace(' $', '').trim();
+                    // СНАЧАЛА достаем атрибуты ячейки
+                    const employeeId = cell.getAttribute('data-id');
+                    const field = cell.getAttribute('data-field');
+                    
+                    // ТЕПЕРЬ безопасно работаем с текстом ячейки
                     let currentText = cell.textContent.trim();
                     if (field === 'salary') {
                         currentText = currentText.replace(/[^0-9.]/g, '');
                     }
-                    const employeeId = cell.getAttribute('data-id');
-                    const field = cell.getAttribute('data-field');
 
                     if (field === 'position') {
                         // Создаем выпадающий список (dropdown) для должностей по ТЗ
@@ -219,7 +222,7 @@ export function createEmployeesTable(employees, periodKey, currentSort, onRefres
                         }
                         
                         // Сохраняем при изменении или потере фокуса
-                        select.onchange = finishSelectEditing;
+                        // select.onchange = finishSelectEditing;
                         select.onblur = finishSelectEditing;
                         
                     } else if (field === 'salary') {
