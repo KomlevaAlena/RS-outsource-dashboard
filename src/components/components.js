@@ -38,6 +38,21 @@ export const components = {
           </li>
         </ul>
       </nav>
+        <!-- ТЕХНОЛОГИЧЕСКИЙ БЛОК: Панель администратора в самом низу сайдбара -->
+        <div class="sidebar__admin-panel" style="margin-top: auto; padding: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size: 0.8em; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Admin Tools</div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button id="btn-export-db" class="btn btn--secondary" style="flex: 1; padding: 6px 12px; font-size: 0.9em;" title="Export Database to JSON">Export</button>
+                
+                <label for="import-db-file" class="btn btn--secondary" style="flex: 1; padding: 6px 12px; font-size: 0.9em; text-align: center; cursor: pointer;" title="Import Database from JSON">
+                    Import
+                    <input type="file" id="import-db-file" accept=".json" style="display: none;">
+                </label>
+                
+                <button id="btn-reset-db" class="btn btn--danger" style="width: 100%; padding: 6px 12px; font-size: 0.9em; margin-top: 5px;" title="Reset Database to Default">Reset DB</button>
+            </div>
+        </div>
+
     </aside>
     <main class="main-content">
       <header class="main-header">
@@ -143,7 +158,7 @@ export const components = {
       </div>
   </div>
 
-  <div class="modal" id="details-modal">
+  <!-- <div class="modal" id="details-modal">
       <div class="modal__overlay" id="details-modal-overlay"></div>
       <div class="modal__content">
           <div class="modal__header">
@@ -154,7 +169,7 @@ export const components = {
           <div id="details-modal-body">
               </div>
       </div>
-  </div>
+  </div> -->
 
   <div class="modal" id="details-modal">
       <div class="modal__overlay" id="details-modal-overlay"></div>
