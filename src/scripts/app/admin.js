@@ -36,7 +36,7 @@ export function exportDatabase() {
  * @param {Function} refreshCallback - Функция перерисовки текущей страницы
  */
 
-export function importDataBase(event, refreshCallback) {
+export function importDatabase(event, refreshCallback) {
     const file  = event.target.files[0];
     if (!file) return;
 

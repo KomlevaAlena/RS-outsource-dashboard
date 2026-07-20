@@ -4,6 +4,7 @@
  */
 
 import { renderCurrentTab } from './render.js';
+import { exportDatabase, importDatabase, resetDatabase } from './admin.js';
 
 function getCurrentPeriod() { // собирает "год-месяц" из селекторов
     const monthSelect = document.getElementById('month-select');
@@ -139,6 +140,30 @@ export function initUI() {
     if (empCloseBtn) empCloseBtn.addEventListener('click', closeEmployeesPanel);
     if (empOverlay) empOverlay.addEventListener('click', closeEmployeesPanel);
 
+    // Первоначальный рендер при загрузке
+    // const activeTabBtn = document.querySelector('.nav-button--active');
+    // const initialTab = activeTabBtn ? activeTabBtn.getAttribute('data-tab') : 'projects';
+    // renderCurrentTab(initialTab, getCurrentPeriod());
+
+    // 8. Инициализация кнопок панели администратора
+    const exportBtn = document.getElementById('btn-export-db');
+    const importInput = document.getElementById('import-db-file');
+    const resetBtn = document.getElementById('btn-reset-db');
+    // Callback для перерисовки после импорта данных
+    const refreshUI = () => {
+        const activeTabBtn = document.querySelector('.nav-button--active');
+        const currentTab = activeTabBtn ? activeTabBtn.getAttribute('data-tab') : 'projects';
+        renderCurrentTab(currentTab, getCurrentPeriod());
+    };
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportDatabase);
+    }
+    if (importInput) {
+        importInput.addEventListener('change', (event) => importDatabase(event, refreshUI));
+    }
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetDatabase);
+    }
     // Первоначальный рендер при загрузке
     const activeTabBtn = document.querySelector('.nav-button--active');
     const initialTab = activeTabBtn ? activeTabBtn.getAttribute('data-tab') : 'projects';
