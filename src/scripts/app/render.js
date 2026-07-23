@@ -10,6 +10,7 @@ import { calculateVacationFactor, calculateEffectiveCapacity, calculateProjectFi
 import { currentFilters } from './filters.js';
 import { createProjectsTable, createFinancialSummary, openAssignModal, openDetailsModal, handleDeleteProject } from './projectsTable.js';
 import { createEmployeesTable, handleDeleteEmployee, updateEmployeeField } from './employeesTable.js';
+import { autoPositionPopup } from '../utils/position-popup.js';
 
 // Глобальное состояние сортировки для текущего сеанса отображения
 const currentSort = {
@@ -77,6 +78,8 @@ export function renderCurrentTab(tabName, periodKey) {
                     </div>
                 `;
                 th.appendChild(popup);
+                // 🚀 ВЫЗЫВАЕМ УМНОЕ ПОЗИЦИОНИРОВАНИЕ
+                autoPositionPopup(popup);
                 
                 const input = popup.querySelector('#filter-popup-input');
                 input.focus();
