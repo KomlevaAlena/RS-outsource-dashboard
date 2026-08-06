@@ -237,8 +237,8 @@ export function openDetailsModal(projectId, periodKey) {
             menu.style.boxShadow = '0px 2px 5px rgba(0,0,0,0.2)';
 
             menu.innerHTML = `
-                <button class="menu-btn-see" data-name="${empName}" style="display:block; width:100%; text-align:left; margin-bottom:4px;">See at Employees</button>
-                <button class="menu-btn-unassign" data-emp-id="${empId}" style="display:block; width:100%; text-align:left;">Unassign</button>
+                <button class="menu-btn-see" data-name="${empName}">See at Employees</button>
+                <button class="menu-btn-unassign" data-emp-id="${empId}">Unassign</button>
             `;
 
             // ГЛАВНОЕ ИСПРАВЛЕНИЕ: добавляем меню внутрь модалки, чтобы клики по нему перехватывались!
