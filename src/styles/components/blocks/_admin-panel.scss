@@ -1,0 +1,38 @@
+@use '../../variables';
+
+.sidebar__admin-panel {
+    margin-top: auto;
+    padding: 15px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar__admin-tool {
+    font-size: 0.8em;
+    color: #888;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sidebar__admin-wrapper {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn.btn--secondary {
+    flex: 1;
+    padding: 6px 12px;
+    font-size: 0.9em;
+
+    input {
+        display: none;
+    }
+}
+
+.btn.btn--danger {
+    width: 100%;
+    padding: 6px 12px;
+    font-size: 0.9em;
+    margin-top: 5px;
+}

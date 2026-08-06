@@ -39,17 +39,17 @@ export const components = {
         </ul>
       </nav>
         <!-- ТЕХНОЛОГИЧЕСКИЙ БЛОК: Панель администратора в самом низу сайдбара -->
-        <div class="sidebar__admin-panel" style="margin-top: auto; padding: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
-            <div style="font-size: 0.8em; color: #888; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Admin Tools</div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button id="btn-export-db" class="btn btn--secondary" style="flex: 1; padding: 6px 12px; font-size: 0.9em;" title="Export Database to JSON">Export</button>
+        <div class="sidebar__admin-panel">
+            <div class="sidebar__admin-tool">Admin Tools</div>
+            <div class="sidebar__admin-wrapper">
+                <button id="btn-export-db" class="btn btn--secondary" title="Export Database to JSON">Export</button>
                 
-                <label for="import-db-file" class="btn btn--secondary" style="flex: 1; padding: 6px 12px; font-size: 0.9em; text-align: center; cursor: pointer;" title="Import Database from JSON">
+                <label for="import-db-file" class="btn btn--secondary" text-align: center; cursor: pointer;" title="Import Database from JSON">
                     Import
-                    <input type="file" id="import-db-file" accept=".json" style="display: none;">
+                    <input type="file" id="import-db-file" accept=".json">
                 </label>
                 
-                <button id="btn-reset-db" class="btn btn--danger" style="width: 100%; padding: 6px 12px; font-size: 0.9em; margin-top: 5px;" title="Reset Database to Default">Reset DB</button>
+                <button id="btn-reset-db" class="btn btn--danger" title="Reset Database to Default">Reset DB</button>
             </div>
         </div>
 
@@ -195,14 +195,14 @@ export const components = {
           <div class="modal__body">
               <div id="calendar-grid-container"></div>
               
-              <div class="calendar-info" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">
-                  <p id="calendar-working-days" style="font-weight: bold; margin-bottom: 8px;">Working Days: --/-- days</p>
-                  <p class="vacation-ranges-title" style="margin-bottom: 4px; color: #666; font-size: 0.9em;">Selected Vacations:</p>
-                  <div id="calendar-vacation-ranges" class="vacation-ranges-list" style="font-style: italic; color: #333;">None</div>
+              <div class="calendar-info">
+                  <p class="calendar-working-days" id="calendar-working-days">Working Days: --/-- days</p>
+                  <p class="vacation-ranges-title">Selected Vacations:</p>
+                  <div id="calendar-vacation-ranges" class="vacation-ranges-list">None</div>
               </div>
           </div>
           
-          <div class="modal__footer" style="margin-top: 20px; display: flex; justify-content: flex-end;">
+          <div class="modal__footer">
               <button id="btn-save-vacation" class="btn btn--primary">Set Vacation</button>
           </div>
       </div>

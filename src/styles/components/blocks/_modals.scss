@@ -166,3 +166,31 @@
     color: var(--danger-color);
   }
 }
+
+.calendar-info {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.calendar-working-days {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.vacation-ranges-title {
+  margin-bottom: 4px;
+  color: #666;
+  font-size: 0.9em;
+}
+
+.vacation-ranges-list {
+  font-style: italic;
+  color: #333;
+}
+
+.modal__footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
