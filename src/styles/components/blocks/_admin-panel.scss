@@ -1,4 +1,5 @@
 @use '../../variables';
+@use '../../utilities/themes';
 
 .sidebar__admin-panel {
     margin-top: auto;
@@ -8,7 +9,7 @@
 
 .sidebar__admin-tool {
     font-size: 0.8em;
-    color: #888;
+    color: var(--text-secondary);
     margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -16,7 +17,7 @@
 
 .sidebar__admin-wrapper {
     display: flex;
-    gap: 8px;
+    gap: variables.$gap-sm;
     flex-wrap: wrap;
 }
 

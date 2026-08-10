@@ -1,4 +1,5 @@
 @use '../../variables';
+@use '../../utilities/themes';
 
 // Блок модального окна календаря отпусков
 .calendar-modal {
@@ -69,9 +70,10 @@
 
     // СОСТОЯНИЕ: Выбранный день отпуска (Оранжевый акцент по ТЗ)
     &--selected {
-        background-color: #ff9800 !important; // Оставляем сочный оранжевый для явного контраста отпуска
-        color: #ffffff !important;
-        border-color: #e65100 !important;
+        background-color: var(--accent-hover) !important; // Оставляем сочный оранжевый для явного контраста отпуска
+        // color: #ffffff !important;
+        color: var(--bg-primary);
+        border-color: var(--accent-hover) !important;
         font-family: variables.$font-bold;
         box-shadow: 0 2px 4px rgba(230, 81, 0, 0.3);
     }

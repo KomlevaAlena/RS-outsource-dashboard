@@ -1,4 +1,5 @@
 @use '../../variables';
+@use '../../utilities/themes';
 
 // Контейнер для чипсов над таблицей
 .filter-chips-container {
@@ -20,7 +21,7 @@
   border-radius: variables.$border-radius-sm;
   font-size: variables.$font-size-xs;
   color: var(--text-primary);
-  gap: 6px;
+  gap: variables.$gap-sm;
 
   &__remove {
     background: none;
@@ -45,7 +46,7 @@
 
     &:hover {
       background-color: var(--danger-color);
-      color: white;
+      color: var(--bg-primary);
     }
   }
 }
@@ -82,7 +83,7 @@
   z-index: 100;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: variables.$gap-sm;
   min-width: 180px;
   text-transform: none; // Чтобы UPPERCASE из thead не ломал текст внутри
   font-weight: normal;
@@ -105,7 +106,7 @@
   &__actions {
     display: flex;
     justify-content: flex-end;
-    gap: 6px;
+    gap: variables.$gap-sm;
   }
 
   &__btn {
