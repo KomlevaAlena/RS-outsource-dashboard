@@ -1,4 +1,5 @@
 @use '../../variables';
+@use '../../utilities/themes';
 
 .modal {
   position: fixed;
@@ -94,7 +95,7 @@
     font-weight: 600;
     
     &:hover {
-      color: #0056b3; // Чуть темнее при наведении
+      color: var(--color-active); // Чуть темнее при наведении
     }
   }
 }
@@ -154,7 +155,7 @@
   background: none;
   border: none;
   color: var(--danger-color); // Опасный красный цвет
-  font-size: 20px;
+  font-size: variables.$font-size-xl;
   font-weight: bold;
   cursor: pointer;
   padding: 0 4px;
@@ -168,25 +169,25 @@
 }
 
 .calendar-info {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
+  margin-top: variables.$gap-lg;
+  padding-top: variables.$gap-lg;
+  border-top: 1px solid var(--border-color);
 }
 
 .calendar-working-days {
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: variables.$gap-sm;
 }
 
 .vacation-ranges-title {
-  margin-bottom: 4px;
-  color: #666;
+  margin-bottom: variables.$gap-xs;
+  color: var(--text-primary);
   font-size: 0.9em;
 }
 
 .vacation-ranges-list {
   font-style: italic;
-  color: #333;
+  color: var(--text-secondary);
 }
 
 .modal__footer {

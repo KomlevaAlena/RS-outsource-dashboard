@@ -73,7 +73,7 @@
 
   &:hover {
     background-color: var(--danger-color);
-    color: white; // При наведении заливается красным
+    color: var(--bg-primary); // При наведении заливается красным
   }
 }
 
@@ -86,7 +86,7 @@
   &:hover {
     background-color: var(--text-primary);
     border: 1px solid var(--text-primary);
-    color: white;
+    color: var(--bg-primary);
   }
 }
 
@@ -160,11 +160,11 @@ th.sortable {
 .table-inline-select {
     width: 100%;
     padding: 4px 8px;
-    font-size: 14px;
-    border: 1px solid var(--primary-color, #4a90e2);
-    border-radius: 4px;
-    background-color: #fff;
-    color: #333;
+    font-size: variables.$font-size-sm;
+    border: 1px solid var(--primary-color, --color-active);
+    border-radius: variables.$border-radius-sm;
+    background-color: var(--bg-primary);
+    color: var(--text-secondary);
     outline: none;
     cursor: pointer;
 }

@@ -39,7 +39,7 @@
   // Стиль для активной кнопки (выбранной вкладки)
   &--active {
     background-color: var(--accent-color);
-    color: white; // Текст становится белым на синем фоне
+    color: var(--bg-primary); // Текст становится белым на синем фоне
   }
 
   &:hover:not(.nav-button--active) {

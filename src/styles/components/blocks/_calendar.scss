@@ -28,7 +28,7 @@
 
     // Выходные в заголовках
     &--weekend {
-        background-color: rgba(#ff6b6b, 0.1); // Используем цвет опасности с прозрачностью
+        background-color: rgba(var(--danger-color), 0.1); // Используем цвет опасности с прозрачностью
         color: var(--danger-color);
     }
 }
@@ -71,7 +71,6 @@
     // СОСТОЯНИЕ: Выбранный день отпуска (Оранжевый акцент по ТЗ)
     &--selected {
         background-color: var(--accent-hover) !important; // Оставляем сочный оранжевый для явного контраста отпуска
-        // color: #ffffff !important;
         color: var(--bg-primary);
         border-color: var(--accent-hover) !important;
         font-family: variables.$font-bold;
