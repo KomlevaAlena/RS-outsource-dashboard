@@ -12,6 +12,7 @@ import { initUI } from './scripts/app/ui.js';
 import { initProjectForm } from './scripts/app/project-form.js';
 import { initEmployeeForm } from './scripts/app/employee-form.js';
 import { initAssignModal } from './scripts/app/assign-modal.js';
+import { initTheme } from './scripts/theme.js';
 
 // ПРОВЕРКА: Если в памяти совсем пусто, запишем туда наши начальные данные
 const currentData = store.getRawData();
@@ -44,5 +45,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initProjectForm();
     initEmployeeForm();
     initAssignModal();
+    initTheme();
   }, 0);
 });
+

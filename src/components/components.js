@@ -5,6 +5,8 @@ export const components = {
     <aside class="sidebar" id="sidebar">
       <div class="sidebar__header">
         <button class="sidebar__toggle" id="sidebar-toggle">☰</button>
+        <!-- 🌙 КНОПКА ПЕРЕКЛЮЧЕНИЯ ТЕМЫ -->
+        <button class="theme-toggle btn" id="theme-toggle" title="Toggle Light/Dark Theme">🌙</button>
         <h2 class="sidebar__title">Project Manager</h2>
       </div>
       <nav class="sidebar__nav">

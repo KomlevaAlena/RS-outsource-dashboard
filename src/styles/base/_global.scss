@@ -1,6 +1,6 @@
 @use '../variables' as *;
 
-.btn, button {
+.btn, button, .theme-toggle {
     font-family: $font-medium;
     font-weight: 500;
     font-size: $font-size-base;
@@ -14,7 +14,8 @@
     &:focus,
     &:focus-visible {
         color: var(--accent-hover);
-        background-color: transparent;
+        // background-color: transparent;
+        background-color: var(--bg-secondary);
         border: 1px solid var(--accent-hover);
         outline: none;
     }
@@ -26,6 +27,29 @@
         outline: none;
     }
 }
+
+// .btn.theme-toggle {
+//   background: transparent;
+//   border: none;
+//   font-size: 1.2rem;
+//   cursor: pointer;
+//   padding: 4px 8px;
+//   border-radius: 6px;
+//   transition: background-color 0.2s ease, transform 0.2s ease;
+//   color: var(--text-primary);
+
+//   &:hover {
+//     background-color: var(--accent-hover);
+//     transform: scale(1.1);
+//   }
+
+//   &:active {
+//         color: var(--text-primary);
+//         background-color: var(--accent-hover);
+//         border: 1px solid var(--text-primary);
+//         outline: none;
+//     }
+// }
 
 // .link {
 //     color: $dark;
